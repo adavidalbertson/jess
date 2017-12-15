@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { MakeSocketAction } from 'react-redux-socket/client';
-import { Router, Route } from 'react-router';
+// import { Router, Route } from 'react-router';
 
 
 import Game from './Game.js';

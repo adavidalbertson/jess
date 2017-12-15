@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { MakeSocketAction } from 'react-redux-socket/client';
-// import { push } from 'react-router-redux';
 
 import { newGame, sendMessage } from '../reducers/Socket.js';
 
