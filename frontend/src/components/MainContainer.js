@@ -15,7 +15,6 @@ class MainContainer extends React.Component {
             return;
         }
 
-        console.log('MainContainer joining game', gameID);
         dispatch(
             MakeSocketAction({
                 type: JOIN_GAME,

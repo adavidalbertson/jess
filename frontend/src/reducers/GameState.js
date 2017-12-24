@@ -1,7 +1,6 @@
 import { boardDim, pieceTypes } from '../../../common/Constants.js';
 import { setupNewBoard, getStateDiff } from '../../../common/Utils.js';
-
-import { JOIN_GAME, JOINED_GAME } from './Metadata.js';
+import { JOIN_GAME, JOINED_GAME } from '../../../common/Actions.js';
 
 const MOVE = 'GameState/MOVE';
 const APPLY_DIFF = 'GameState/APPLY_DIFF';
