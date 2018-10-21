@@ -1,2 +1,4 @@
 # ignore node_modules in all directories
 **/node_modules
+npm-debug.log
+frontend/npm-debug.log

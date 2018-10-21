@@ -6,7 +6,9 @@ import Captured from './Captured.js';
 
 import { pendingMove, moveApproved } from '../reducers/GameState.js';
 
-import { setupNewBoard, getNextState } from '../../../common/Utils.js'
+import { submitMove } from '../reducers/Socket.js';
+
+import { setupNewBoard, getNextState, isLegalMove } from '../../../common/Utils.js'
 
 class Game extends React.Component {
     componentWillMount() {
@@ -23,10 +25,22 @@ class Game extends React.Component {
     }
 
     handleMovePiece(piece, endRow, endCol) {
-        const { nextState } = getNextState(piece, endRow, endCol, this.state);
-        console.log(nextState);
-        this.setState(nextState);
+        if (!isLegalMove(piece, endRow, endCol, this.state.positions, this.state.pieces, this.state.enPassant)) {
+            return;
+        }
+
+        const move = {
+            piece,
+            endRow,
+            endCol
+        };
+
+
         this.props.dispatch(pendingMove());
+        this.props.dispatch(submitMove({ piece, endRow, endCol }));
+        const nextState = getNextState(piece, endRow, endCol, this.state);
+        // console.log(nextState);
+        this.setState(nextState);
     }
 
     render() {

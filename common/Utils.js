@@ -69,8 +69,6 @@ function getPieceResource(color, type) {
 function isLegalMove(piece, endRow, endCol, positions, pieces, enPassant) {
     const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
 
-    // console.log(piece.type, piece.row, piece.col, endRow, endCol);
-
     if (piece.captured)
         return false;
 
@@ -317,7 +315,8 @@ function getNextState(piece, endRow, endCol, state) {
     newState.positions[endRow][endCol] = piece.id;
 
     newState.turn = state.turn ? 0 : 1;
-    return { nextState: newState };
+    // return { nextState: newState };
+    return newState;
 }
 
 module.exports = {

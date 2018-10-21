@@ -2,7 +2,7 @@ import { MakeSocketAction } from 'react-redux-socket/client';
 
 import actions from '../../../common/Actions.js';
 
-export default function Socket(state = {msgs: []}, action = {}) {
+export default function Socket(state = { msgs: [] }, action = {}) {
     let newState = Object.assign({}, state);
 
     switch (action.type) {
@@ -13,12 +13,22 @@ export default function Socket(state = {msgs: []}, action = {}) {
         case actions.GAME_IS_FULL:
             delete newState.gameID;
             return newState;
+
         default: return state;
     }
 }
 
 export function newGame() {
     return MakeSocketAction({
-      type: actions.NEW_GAME,
+        type: actions.NEW_GAME,
     })
+}
+
+export function submitMove(move) {
+    return MakeSocketAction({
+        type: actions.SUBMIT_MOVE,
+        payload: {
+            move
+        }
+    });
 }

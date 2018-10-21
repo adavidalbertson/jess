@@ -1,12 +1,10 @@
 import { boardDim, pieceTypes } from '../../../common/Constants.js';
 import { setupNewBoard, getStateDiff } from '../../../common/Utils.js';
-import { JOIN_GAME, JOINED_GAME } from '../../../common/Actions.js';
+import { JOINED_GAME, MOVE_APPROVED, MOVE_REJECTED } from '../../../common/Actions.js';
 
 const MOVE = 'GameState/MOVE';
 const APPLY_DIFF = 'GameState/APPLY_DIFF';
 const PENDING_MOVE = 'GameState/PENDING_MOVE';
-const MOVE_APPROVED = 'GameState/MOVE_APPROVED';
-const MOVE_REJECTED = 'GameState/MOVE_REJECTED';
 
 // Reducer
 export default function GameState(state = setupNewBoard(), action = {}) {
@@ -97,17 +95,20 @@ export default function GameState(state = setupNewBoard(), action = {}) {
         case PENDING_MOVE:
             newState.pendingMove = true;
             return newState;
-        case JOIN_GAME:
         case MOVE_APPROVED:
-            newState.pieces = action.nextState.pieces;
-            newState.positions = action.nextState.positions;
-            newState.enPassant = action.nextState.enPassant;
-            newState.captured = action.nextState.captured;
-            newState.pendingMove = false;
-            newState.turn = newState.turn ? 0 : 1;
-            return newState;
+        // newState.turn = newState.turn ? 0 : 1;
+        //fall through
         case JOINED_GAME:
-            console.log(action);
+            newState.pieces = action.payload.gameState.pieces;
+            newState.positions = action.payload.gameState.positions;
+            newState.enPassant = action.payload.gameState.enPassant;
+            newState.captured = action.payload.gameState.captured;
+            newState.turn = action.payload.gameState.turn;
+            newState.pendingMove = false;
+            return newState;
+        case MOVE_REJECTED:
+            newState.pendingMove - false;
+            return newState;
         default: return state;
     }
 }
