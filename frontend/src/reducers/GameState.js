@@ -96,8 +96,7 @@ export default function GameState(state = setupNewBoard(), action = {}) {
             newState.pendingMove = true;
             return newState;
         case MOVE_APPROVED:
-        // newState.turn = newState.turn ? 0 : 1;
-        //fall through
+            //fall through
         case JOINED_GAME:
             newState.pieces = action.payload.gameState.pieces;
             newState.positions = action.payload.gameState.positions;

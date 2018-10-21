@@ -88,16 +88,17 @@ const handleMessageActions = function (action, socketEnv, next) {
             } else {
                 let currentGameState = games[gameID].gameState;
                 let move = action.payload.move;
+                let legal = false;
 
                 try {
-                    let legal = utils.isLegalMove(
+                    legal = utils.isLegalMove(
                         move.piece,
                         move.endRow,
                         move.endCol,
                         currentGameState.positions,
                         currentGameState.pieces,
                         currentGameState.enPassant);
-                } catch {
+                } catch (e) {
                     dispatch({
                         type: actions.MOVE_REJECTED
                     });

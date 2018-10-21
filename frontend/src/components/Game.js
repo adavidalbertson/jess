@@ -12,16 +12,11 @@ import { setupNewBoard, getNextState, isLegalMove } from '../../../common/Utils.
 
 class Game extends React.Component {
     componentWillMount() {
-        const newBoard = setupNewBoard();
-        this.state = {
-            pieces: newBoard.pieces,
-            positions: newBoard.positions,
-            captured: []
-        };
+        this.setState(this.props.gameState);
     }
 
     componentWillReceiveProps(props) {
-        this.setState(this.props.gameState);
+        this.setState(props.gameState);
     }
 
     handleMovePiece(piece, endRow, endCol) {
@@ -29,17 +24,9 @@ class Game extends React.Component {
             return;
         }
 
-        const move = {
-            piece,
-            endRow,
-            endCol
-        };
-
-
         this.props.dispatch(pendingMove());
         this.props.dispatch(submitMove({ piece, endRow, endCol }));
         const nextState = getNextState(piece, endRow, endCol, this.state);
-        // console.log(nextState);
         this.setState(nextState);
     }
 
@@ -68,5 +55,5 @@ class Game extends React.Component {
 }
 
 export default connect(state => ({
-    gameState: state.gameState
+    gameState: state.GameState
 }))(Game);
