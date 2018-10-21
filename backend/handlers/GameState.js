@@ -2,25 +2,18 @@ const utils = require('../../common/Utils.js');
 const actions = require('../../common/Actions.js');
 const uuidv1 = require('uuid/v1');
 
-let games = {};
-let socketToGame = {};
 let gameID;
 
 const handleMessageActions = function (action, socketEnv, next) {
-    // let { dispatch, broadcast, socket, games, socketToGame } = socketEnv;
-    let { dispatch, broadcast, socket } = socketEnv;
-
-    // let games = socketEnv.games;
-    // let socketToGame = socketEnv.socketToGame;
+    let { dispatch, broadcast, socket, games, socketToGame } = socketEnv;
 
     switch (action.type) {
         case actions.NEW_GAME:
-            // gameID = socketToGame[socket.id];
-            gameID = uuidv1();
+            gameID = socketToGame[socket.id];
 
             let playerOne = {
                 socketID: socket.id
-            }
+            };
 
             let gameState = utils.setupNewBoard();
 
@@ -32,16 +25,7 @@ const handleMessageActions = function (action, socketEnv, next) {
                 gameState
             };
 
-            // socketEnv.games[gameID] = game;
             games[gameID] = game;
-            socketToGame[socket.id] = gameID;
-
-            socketEnv.socket = socketEnv.socket.join(gameID)
-            socketEnv.io = socketEnv.io.in(gameID)
-            socketEnv.broadcast = action => socketEnv.io.emit('react redux action', action)
-            socketEnv.touched = true;
-
-            socket = socket.join(gameID);
 
             dispatch({
                 type: actions.JOINED_GAME,
@@ -52,13 +36,11 @@ const handleMessageActions = function (action, socketEnv, next) {
             });
 
             broadcast({
-                type: "CAN_YOU_SEE",
-                payload: {
-
-                }
+                type: actions.NEW_GAME
             });
 
             break;
+
         case actions.JOIN_GAME:
             gameID = action.payload.gameID;
 
@@ -70,16 +52,13 @@ const handleMessageActions = function (action, socketEnv, next) {
             } else if (games[gameID].players.length > 1) {
                 dispatch({
                     type: actions.GAME_IS_FULL
-                })
+                });
             } else {
                 const player = {
                     socketID: socket.id
-                }
+                };
 
                 games[gameID].players.push(player);
-                socketToGame[socket.id] = gameID;
-
-                // socket.join(gameID);
 
                 dispatch({
                     type: actions.JOINED_GAME,
@@ -89,16 +68,8 @@ const handleMessageActions = function (action, socketEnv, next) {
                     }
                 });
 
-                socketEnv.socket = socketEnv.socket.join(gameID)
-                socketEnv.io = socketEnv.io.in(gameID)
-                socketEnv.broadcast = action => socketEnv.io.emit('react redux action', action)
-                socketEnv.touched = true;
-
                 broadcast({
-                    type: "CAN_YOU_SEE_ME_TOO",
-                    payload: {
-    
-                    }
+                    type: actions.OPPONENT_JOINED
                 });
 
                 console.log(games[gameID].players);
@@ -108,7 +79,6 @@ const handleMessageActions = function (action, socketEnv, next) {
 
         case actions.SUBMIT_MOVE:
             gameID = socketToGame[socket.id];
-            // gameID = action.payload.gameID;
 
             if (games[gameID] === undefined) {
                 dispatch({
@@ -118,13 +88,20 @@ const handleMessageActions = function (action, socketEnv, next) {
             } else {
                 let currentGameState = games[gameID].gameState;
                 let move = action.payload.move;
-                let legal = utils.isLegalMove(
-                    move.piece,
-                    move.endRow,
-                    move.endCol,
-                    currentGameState.positions,
-                    currentGameState.pieces,
-                    currentGameState.enPassant);
+
+                try {
+                    let legal = utils.isLegalMove(
+                        move.piece,
+                        move.endRow,
+                        move.endCol,
+                        currentGameState.positions,
+                        currentGameState.pieces,
+                        currentGameState.enPassant);
+                } catch {
+                    dispatch({
+                        type: actions.MOVE_REJECTED
+                    });
+                }
 
                 if (legal) {
                     let nextState = utils.getNextState(
@@ -135,11 +112,6 @@ const handleMessageActions = function (action, socketEnv, next) {
 
                     games[gameID].gameState = nextState;
 
-                    socketEnv.socket = socketEnv.socket.join(gameID)
-                    socketEnv.io = socketEnv.io.in(gameID)
-                    socketEnv.broadcast = action => socketEnv.io.emit('react redux action', action)
-                    socketEnv.touched = true;
-
                     broadcast({
                         type: actions.MOVE_APPROVED,
                         payload: {
@@ -149,7 +121,7 @@ const handleMessageActions = function (action, socketEnv, next) {
                 } else {
                     dispatch({
                         type: actions.MOVE_REJECTED
-                    })
+                    });
                 }
             }
 
@@ -159,31 +131,8 @@ const handleMessageActions = function (action, socketEnv, next) {
     next();
 }
 
-// const handleDisconnect = function (socketEnv, next) {
-//     console.log('THE SOCKET WAS DISCONNECTED OH NO');
-//     let { socket } = socketEnv;
-
-//     let gameID = socketEnv.socketToGame[socket.id];
-
-//     if (gameID === undefined) {
-//         console.log('wasn\'t in a game anyway');
-//     } else {
-//         if (games[gameID].players.length > 1) {
-//             games[gameID].players = games[gameID].players.filter(player => player.socketID !== socket.id);
-//             console.log(games[gameID].players);
-//         } else {
-//             delete games[gameID];
-//         }
-//     }
-
-//     delete socketEnv.socketToGame[socket.id];
-
-//     next();
-// }
-
 module.exports = function (reactReduxSocketServer) {
     reactReduxSocketServer.onActionIn(handleMessageActions);
-    // reactReduxSocketServer.onDisconnect(handleDisconnect);
 }
 
 module.exports.log = _log => { log = _log; return module.exports }

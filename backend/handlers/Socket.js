@@ -1,14 +1,13 @@
 const actions = require('../../common/Actions.js');
 const uuidv1 = require('uuid/v1');
 
-let gameID;
 let games = {};
 let socketToGame = {};
 
 const handleSocketActions = function (action, socketEnv, next) {
     socketEnv.games = games;
     socketEnv.socketToGame = socketToGame;
-switch (action.type) {
+    switch (action.type) {
         case actions.NEW_GAME:
             gameID = uuidv1();
             socketToGame[socketEnv.socket.id] = gameID;
@@ -21,15 +20,9 @@ switch (action.type) {
             gameID = socketToGame[socketEnv.socket.id];
     }
 
-    // socketEnv.socketToGame = socketToGame;
-    // socketEnv.games = games;
-    socketEnv.gameID = gameID;
+    socketEnv.socket = socketEnv.socket.join(gameID);
+    socketEnv.io = socketEnv.io.in(gameID);
 
-    socketEnv.socket = socketEnv.socket.join(gameID)
-    socketEnv.io = socketEnv.io.in(gameID)
-    socketEnv.broadcast = action => socketEnv.io.emit('react redux action', action)
-    socketEnv.touched = true;
-    
     next();
 }
 
@@ -54,11 +47,6 @@ const handleDisconnect = function (socketEnv, next) {
 
     next();
 }
-
-// module.exports = {
-//     putInRoom: handleSocketActions,
-//     handleDisconnect
-// };
 
 module.exports = function (reactReduxSocketServer) {
     reactReduxSocketServer.onActionIn(handleSocketActions);
