@@ -66,7 +66,7 @@ function getPieceResource(color, type) {
     }
 }
 
-function isLegalMove(piece, endRow, endCol, positions, pieces, enPassant) {
+function isLegalMove(piece, endRow, endCol, positions, pieces, enPassant, checkCheck = true) {
     const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
 
     if (piece.captured)
@@ -128,7 +128,7 @@ function isLegalMove(piece, endRow, endCol, positions, pieces, enPassant) {
                 }
             } else if (Math.abs(piece.col - endCol) === 1) {
                 if (!pieces[positions[endRow][endCol]]
-                    && (enPassant.row !== endRow || enPassant.col !== endCol)) {
+                    && (enPassant != null && (enPassant.row !== endRow || enPassant.col !== endCol))) {
                     // console.log('pawns can only move diagonally when capturing')
                     return false;
                 }
@@ -146,6 +146,13 @@ function isLegalMove(piece, endRow, endCol, positions, pieces, enPassant) {
     const captureTarget = pieces[positions[endRow][endCol]];
     if (captureTarget && piece.color === captureTarget.color)
         return false;
+
+    if (checkCheck) {
+        const nextState = getNextState(piece, endRow, endCol, { pieces, positions, enPassant });
+        const king = nextState.pieces.find(p => p.type === KING && p.color === piece.color);
+        if (isUnderAttack(king.row, king.col, positions, pieces, piece.color))
+            return false;
+    }
 
     return true;
 }
@@ -255,9 +262,9 @@ function getStateDiff(piece, endRow, endCol, state) {
 }
 
 function getNextState(piece, endRow, endCol, state) {
-    if (!isLegalMove(piece, endRow, endCol, state.positions, state.pieces, state.enPassant)) {
-        return state;
-    }
+    // if (!isLegalMove(piece, endRow, endCol, state.positions, state.pieces, state.enPassant)) {
+    //     return state;
+    // }
 
     // let newState = Object.assign({}, state);
     let newState = JSON.parse(JSON.stringify(state)); //deep copy 
@@ -293,6 +300,9 @@ function getNextState(piece, endRow, endCol, state) {
         let capturedPiece = newState.pieces[capturedPieceID];
         newState.pieces[capturedPieceID].captured = true;
         newState.positions[capturedPiece.row][capturedPiece.col] = null;
+        if (newState.captured == null) {
+            newState.captured = [];
+        }
         newState.captured.push(capturedPieceID);
     }
 
@@ -320,10 +330,84 @@ function getNextState(piece, endRow, endCol, state) {
     return newState;
 }
 
+function isUnderAttack(row, col, positions, pieces, pieceColor) {
+    let opposingPieces = pieces.filter(p => p.color !== pieceColor)
+    for (let piece in opposingPieces) {
+        if (isLegalMove(opposingPieces[piece], row, col, positions, pieces, null, false)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function getAttackers(row, col, positions, pieces, pieceColor) {
+    if (!isUnderAttack(row, col, positions, pieces, pieceColor)) {
+        return [];
+    }
+
+    let attackers = [];
+
+    for (let piece in pieces.filter(p => p.color !== pieceColor)) {
+        if (isLegalMove(piece, row, col, positions, pieces, null, false)) {
+            attackers.push(piece);
+        }
+    }
+
+    return attackers;
+}
+
+function isCheck(positions, pieces, pieceColor) {
+    const { KING } = pieceTypes;
+    let king = pieces.find(piece => piece.type === KING && piece.color === pieceColor);
+
+    if (!isUnderAttack(king.row, king.col, positions, pieces, king.color)) {
+        return false;
+    }
+
+    for (let attacker in getAttackers(king.row, king.col, positions, pieces, king.color)) {
+        if (!isUnderAttack(attacker.row, attacker.col, positions, pieces)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function isCheckMate(positions, pieces, pieceColor) {
+    if (!isCheck(positions, pieces, pieceColor)) {
+        return false;
+    }
+
+    const { KING } = pieceTypes;
+    let king = pieces.find(piece => piece.type === KING && piece.color === pieceColor);
+
+    for (let x = -1; x++; x <= 1) {
+        for (let y = -1; y++; y <= 1) {
+            if (!isLegalMove(king, king.row + y, king.col + x, positions, pieces, null)) {
+                continue;
+            }
+
+            if (!isUnderAttack(king.row + y, king.col + x, positions, pieces, king.color)) {
+                return false;
+            }
+
+            for (let attacker in getAttackers(king.row, king.col, positions, pieces, king.color)) {
+                if (!isUnderAttack(attacker.row, attacker.col, positions, pieces, piece.color)) {
+                    return true;
+                }
+            }
+        }
+    }
+}
+
 module.exports = {
     setupNewBoard,
     getPieceResource,
     isLegalMove,
+    isUnderAttack,
+    isCheck,
+    isCheckMate,
     getStateDiff,
     getNextState
 }
