@@ -3,6 +3,7 @@ const actions = require('../../common/Actions.js');
 const uuidv1 = require('uuid/v1');
 
 let gameID;
+let game;
 
 const handleMessageActions = function (action, socketEnv, next) {
     let { dispatch, broadcast, socket, games, socketToGame } = socketEnv;
@@ -17,13 +18,16 @@ const handleMessageActions = function (action, socketEnv, next) {
 
             let gameState = utils.setupNewBoard();
 
-            let game = {
+            game = {
                 id: gameID,
                 players: [
-                    playerOne
+                    null,
+                    null
                 ],
                 gameState
             };
+
+            game.players[0] = playerOne;
 
             games[gameID] = game;
 
@@ -31,6 +35,7 @@ const handleMessageActions = function (action, socketEnv, next) {
                 type: actions.JOINED_GAME,
                 payload: {
                     gameID,
+                    playerColor: 0,
                     gameState
                 }
             });
@@ -43,86 +48,115 @@ const handleMessageActions = function (action, socketEnv, next) {
 
         case actions.JOIN_GAME:
             gameID = action.payload.gameID;
+            game = games[gameID];
 
-            if (games[gameID] === undefined) {
+            if (game === undefined) {
                 dispatch({
                     type: actions.GAME_DOES_NOT_EXIST,
                 });
                 break;
-            } else if (games[gameID].players.length > 1) {
+            } else if (game.players.filter(p => p != null).length > 1) {
                 dispatch({
                     type: actions.GAME_IS_FULL
                 });
+                break;
             } else {
                 const player = {
                     socketID: socket.id
                 };
 
-                games[gameID].players.push(player);
+                let playerColor = game.players.indexOf(null);
+
+                if (playerColor == null || playerColor < 0 || playerColor > 1) {
+                    dispatch({
+                        type: actions.GAME_IS_FULL
+                    });
+                    break;
+                }
+
+                game.players[playerColor] = player;
 
                 dispatch({
                     type: actions.JOINED_GAME,
                     payload: {
                         gameID: gameID,
-                        gameState: games[gameID].gameState
+                        playerColor: playerColor,
+                        gameState: game.gameState
                     }
                 });
 
                 broadcast({
                     type: actions.OPPONENT_JOINED
                 });
-
-                console.log(games[gameID].players);
             }
 
             break;
 
         case actions.SUBMIT_MOVE:
             gameID = socketToGame[socket.id];
+            game = games[gameID];
 
-            if (games[gameID] === undefined) {
+            if (game === undefined) {
                 dispatch({
                     type: actions.GAME_DOES_NOT_EXIST,
                 });
                 break;
             } else {
-                let currentGameState = games[gameID].gameState;
-                let move = action.payload.move;
-                let legal = false;
+                let gameState = game.gameState;
 
-                try {
-                    legal = utils.isLegalMove(
-                        move.piece,
-                        move.endRow,
-                        move.endCol,
-                        currentGameState.positions,
-                        currentGameState.pieces,
-                        currentGameState.enPassant);
-                } catch (e) {
-                    dispatch({
-                        type: actions.MOVE_REJECTED
-                    });
-                }
+                if (game.players[gameState.turn] != null
+                    && socket.id === game.players[gameState.turn].socketID) {
+                    let move = action.payload.move;
+                    let legal = false;
 
-                if (legal) {
-                    let nextState = utils.getNextState(
-                        move.piece,
-                        move.endRow,
-                        move.endCol,
-                        currentGameState);
+                    try {
+                        legal = utils.isLegalMove(
+                            move.piece,
+                            move.endRow,
+                            move.endCol,
+                            gameState.positions,
+                            gameState.pieces,
+                            gameState.enPassant);
+                    } catch (e) {
+                        dispatch({
+                            type: actions.MOVE_REJECTED,
+                            payload: {
+                                reason: 'Invalid move format.'
+                            }
+                        });
+                    }
 
-                    games[gameID].gameState = nextState;
+                    if (legal) {
+                        let nextState = utils.getNextState(
+                            move.piece,
+                            move.endRow,
+                            move.endCol,
+                            gameState);
 
-                    broadcast({
-                        type: actions.MOVE_APPROVED,
-                        payload: {
-                            gameState: nextState
-                        }
-                    });
+                        game.gameState = nextState;
+
+                        broadcast({
+                            type: actions.MOVE_APPROVED,
+                            payload: {
+                                gameState: nextState
+                            }
+                        });
+                    } else {
+                        dispatch({
+                            type: actions.MOVE_REJECTED,
+                            payload: {
+                                reason: 'Illegal move.'
+                            }
+                        });
+                    }
                 } else {
                     dispatch({
-                        type: actions.MOVE_REJECTED
+                        type: actions.MOVE_REJECTED,
+                        payload: {
+                            reason: 'It\'s not your turn.'
+                        }
                     });
+                    break;
                 }
             }
 

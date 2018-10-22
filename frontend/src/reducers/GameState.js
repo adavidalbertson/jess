@@ -65,39 +65,40 @@ export default function GameState(state = setupNewBoard(), action = {}) {
         //
         //     newState.turn = newState.turn ? 0 : 1;
         //     return newState;
-        case APPLY_DIFF:
-        case MOVE:
-            let piece = newState.pieces[action.pieceID];
-            let diff = getStateDiff(piece, action.endRow, action.endCol, newState);
-            console.log(diff);
+        // case APPLY_DIFF:
+        // case MOVE:
+            // let piece = newState.pieces[action.pieceID];
+            // let diff = getStateDiff(piece, action.endRow, action.endCol, newState);
+            // console.log(diff);
 
-            if (diff.pieces) {
-                diff.pieces.forEach(piece => { newState.pieces[piece.id] = piece; });
-            }
+            // if (diff.pieces) {
+            //     diff.pieces.forEach(piece => { newState.pieces[piece.id] = piece; });
+            // }
 
-            if (diff.captured) {
-                diff.captured.forEach(pieceID => { newState.captured.push(pieceID); });
-            }
+            // if (diff.captured) {
+            //     diff.captured.forEach(pieceID => { newState.captured.push(pieceID); });
+            // }
 
-            if (diff.positions) {
-                diff.positions.forEach((row, rowNum) => {
-                    row.forEach((pieceID, colNum) => {
-                        newState.positions[rowNum][colNum] = pieceID;
-                    });
-                });
-            }
+            // if (diff.positions) {
+            //     diff.positions.forEach((row, rowNum) => {
+            //         row.forEach((pieceID, colNum) => {
+            //             newState.positions[rowNum][colNum] = pieceID;
+            //         });
+            //     });
+            // }
 
-            if (diff.enPassant) {
-                newState.enPassant = diff.enPassant;
-            }
+            // if (diff.enPassant) {
+            //     newState.enPassant = diff.enPassant;
+            // }
 
-            return Object.assign({}, newState);
+            // return Object.assign({}, newState);
         case PENDING_MOVE:
             newState.pendingMove = true;
             return newState;
-        case MOVE_APPROVED:
-            //fall through
         case JOINED_GAME:
+            newState.playerColor = action.payload.playerColor;
+        //fall through
+        case MOVE_APPROVED:
             newState.pieces = action.payload.gameState.pieces;
             newState.positions = action.payload.gameState.positions;
             newState.enPassant = action.payload.gameState.enPassant;
@@ -106,7 +107,8 @@ export default function GameState(state = setupNewBoard(), action = {}) {
             newState.pendingMove = false;
             return newState;
         case MOVE_REJECTED:
-            newState.pendingMove - false;
+            console.log('Move got rejected:', action.payload.reason);
+            newState.pendingMove = false;
             return newState;
         default: return state;
     }

@@ -26,8 +26,6 @@ class Game extends React.Component {
 
         this.props.dispatch(pendingMove());
         this.props.dispatch(submitMove({ piece, endRow, endCol }));
-        const nextState = getNextState(piece, endRow, endCol, this.state);
-        this.setState(nextState);
     }
 
     render() {

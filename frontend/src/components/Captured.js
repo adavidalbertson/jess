@@ -19,7 +19,7 @@ export default class Captured extends React.Component {
 
         return <div style={{
             width: boardDim * squareSize,
-            height: squareSize,
+            minHeight: squareSize,
             display: 'flex',
             flexWrap: 'wrap'
         }}>

@@ -31,13 +31,15 @@ const handleDisconnect = function (socketEnv, next) {
     let { socket } = socketEnv;
 
     let gameID = socketToGame[socket.id];
+    let game = games[gameID];
 
     if (gameID === undefined || games[gameID] === undefined) {
         console.log('wasn\'t in a game anyway');
     } else {
-        if (games[gameID].players.length > 1) {
-            games[gameID].players = games[gameID].players.filter(player => player.socketID !== socket.id);
-            console.log(games[gameID].players);
+        if (game.players.filter(p => p != null).length > 1) {
+            game.players = game.players
+                .map(player => player.socketID === socket.id ? null : player)
+
         } else {
             delete games[gameID];
         }

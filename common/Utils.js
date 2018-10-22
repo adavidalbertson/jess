@@ -259,12 +259,13 @@ function getNextState(piece, endRow, endCol, state) {
         return state;
     }
 
-    let newState = Object.assign({}, state);
+    // let newState = Object.assign({}, state);
+    let newState = JSON.parse(JSON.stringify(state)); //deep copy 
 
     const { QUEEN, PAWN } = pieceTypes;
     const startRow = piece.row;
     const startCol = piece.col;
-    let capturedPieceID = state.positions[endRow][endCol];
+    let capturedPieceID = newState.positions[endRow][endCol];
 
     newState.enPassant = null;
 
@@ -281,10 +282,10 @@ function getNextState(piece, endRow, endCol, state) {
             };
         }
 
-        if (state.enPassant
-            && endRow === state.enPassant.row
-            && endCol === state.enPassant.col) {
-            capturedPieceID = state.enPassant.pieceID;
+        if (newState.enPassant
+            && endRow === newState.enPassant.row
+            && endCol === newState.enPassant.col) {
+            capturedPieceID = newState.enPassant.pieceID;
         }
     }
 
