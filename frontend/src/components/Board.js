@@ -9,11 +9,14 @@ import { squareSize, boardDim } from '../../../common/Constants';
 
 class Board extends React.Component {
     render() {
-        const { pieces, positions, movePiece } = this.props;
+        const { pieces, positions, movePiece, playerColor } = this.props;
         let squares = [];
         let piece;
-        for (let row = 0; row < boardDim; row++) {
-            for (let col = 0; col < boardDim; col++) {
+        for (let displayRow = 0; displayRow < boardDim; displayRow++) {
+            for (let displayCol = 0; displayCol < boardDim; displayCol++) {
+                let row = playerColor === 0 ? displayRow : boardDim - displayRow - 1;
+                let col = playerColor === 0 ? displayCol : boardDim - displayCol - 1;
+
                 piece = pieces[positions[row][col]];
                 squares.push((
                     <Square
@@ -24,18 +27,18 @@ class Board extends React.Component {
                         // turn={turn}
                         movePiece={movePiece}
                     />
-                ))
+                ));
             }
         }
 
         return (
             <div style={{
-                    width: (boardDim * squareSize) + 'px',
-                    height: (boardDim * squareSize) + 'px',
-                    backgroundColor: 'red',
-                    display: 'flex',
-                    flexWrap: 'wrap'
-                }}>
+                width: (boardDim * squareSize) + 'px',
+                height: (boardDim * squareSize) + 'px',
+                backgroundColor: 'red',
+                display: 'flex',
+                flexWrap: 'wrap'
+            }}>
                 {squares}
             </div>
         )

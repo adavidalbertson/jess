@@ -40,6 +40,7 @@ class Game extends React.Component {
                     pieces={this.state.pieces}
                     positions={this.state.positions}
                     // turn={this.state.turn}
+                    playerColor={this.props.gameState.playerColor}
                     movePiece={this.handleMovePiece.bind(this)}
                 />
                 <Captured
