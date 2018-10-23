@@ -150,7 +150,7 @@ function isLegalMove(piece, endRow, endCol, positions, pieces, enPassant, checkC
     if (checkCheck) {
         const nextState = getNextState(piece, endRow, endCol, { pieces, positions, enPassant });
         const king = nextState.pieces.find(p => p.type === KING && p.color === piece.color);
-        if (isUnderAttack(king.row, king.col, positions, pieces, piece.color))
+        if (isUnderAttack(king.row, king.col, nextState.positions, nextState.pieces, piece.color))
             return false;
     }
 
@@ -348,7 +348,8 @@ function getAttackers(row, col, positions, pieces, pieceColor) {
 
     let attackers = [];
 
-    for (let piece in pieces.filter(p => p.color !== pieceColor)) {
+    for (let i in pieces.filter(p => p.color !== pieceColor)) {
+        let piece = pieces[i];
         if (isLegalMove(piece, row, col, positions, pieces, null, false)) {
             attackers.push(piece);
         }
@@ -365,8 +366,11 @@ function isCheck(positions, pieces, pieceColor) {
         return false;
     }
 
-    for (let attacker in getAttackers(king.row, king.col, positions, pieces, king.color)) {
-        if (!isUnderAttack(attacker.row, attacker.col, positions, pieces)) {
+    let attackers = getAttackers(king.row, king.col, positions, pieces, king.color);
+
+    for (let i in attackers) {
+        let attacker = attackers[i];
+        if (!isUnderAttack(attacker.row, attacker.col, positions, pieces, attacker.color)) {
             return true;
         }
     }
@@ -392,13 +396,16 @@ function isCheckMate(positions, pieces, pieceColor) {
                 return false;
             }
 
-            for (let attacker in getAttackers(king.row, king.col, positions, pieces, king.color)) {
+            for (let i in getAttackers(king.row, king.col, positions, pieces, king.color)) {
+                let attacker = attackers[i];
                 if (!isUnderAttack(attacker.row, attacker.col, positions, pieces, piece.color)) {
                     return true;
                 }
             }
         }
     }
+
+    return true;
 }
 
 module.exports = {

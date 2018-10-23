@@ -141,6 +141,19 @@ const handleMessageActions = function (action, socketEnv, next) {
                                 gameState: nextState
                             }
                         });
+
+                        if (utils.isCheckMate(nextState.positions,
+                            nextState.pieces,
+                            0)) {
+                            broadcast({
+                                type: actions.GAME_OVER,
+                                payload: {
+                                    winner: !gameState.turn,
+                                    reason: "checkmate"
+                                }
+                            });
+                        }
+
                     } else {
                         dispatch({
                             type: actions.MOVE_REJECTED,

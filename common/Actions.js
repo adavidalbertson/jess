@@ -8,6 +8,7 @@ const GAME_IS_FULL = 'Socket/GAME_IS_FULL';
 const SUBMIT_MOVE = 'GameState/SUBMIT_MOVE';
 const MOVE_APPROVED = 'GameState/MOVE_APPROVED';
 const MOVE_REJECTED = 'GameState/MOVE_REJECTED';
+const GAME_OVER = 'GameState/GAME_OVER';
 
 module.exports = {
     NEW_GAME,
@@ -18,5 +19,6 @@ module.exports = {
     GAME_IS_FULL,
     SUBMIT_MOVE,
     MOVE_APPROVED,
-    MOVE_REJECTED
+    MOVE_REJECTED,
+    GAME_OVER
 }
