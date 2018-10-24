@@ -10,11 +10,7 @@ export default class BoardPiece extends React.Component {
         let pieceResource = getPieceResource(piece.color, piece.type);
 
         return (
-            <div style={{
-                font: '60px Arial',
-                color: 'black',
-                textAlign: 'center'
-            }}>
+            <div className='piece'>
                 {pieceResource}
             </div>
         );

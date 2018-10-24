@@ -9,7 +9,7 @@ import MainContainer from './components/MainContainer.js';
 import GameState from './reducers/GameState.js';
 import Socket from './reducers/Socket.js';
 import myRouterMiddleware from './middleware/myRouterMiddleware.js';
-import { JOIN_GAME } from '../../common/Actions.js';
+import './styles/styles.less';
 
 const history = createHistory();
 

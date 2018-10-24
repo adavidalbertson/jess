@@ -32,23 +32,11 @@ class Board extends React.Component {
         }
 
         return (
-            <div style={{
-                width: (boardDim * squareSize) + 'px',
-                height: (boardDim * squareSize) + 'px',
-                backgroundColor: 'red',
-                display: 'flex',
-                flexWrap: 'wrap'
-            }}>
+            <div id="board">
                 {squares}
             </div>
         )
     }
 }
-
-// export default connect(state => ({
-//         pieces: state.GameState.pieces,
-//         positions: state.GameState.positions,
-//         // captured: state.GameState.captured
-// }))(DragDropContext(HTML5Backend)(Board));
 
 export default DragDropContext(HTML5Backend)(Board);

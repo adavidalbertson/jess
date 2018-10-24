@@ -30,7 +30,7 @@ class Game extends React.Component {
 
     render() {
         return (
-            <div>
+            <div id="game">
                 <Captured
                     color={0}
                     captured={this.state.captured}

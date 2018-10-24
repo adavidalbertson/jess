@@ -28,19 +28,15 @@ class Square extends React.Component {
     render() {
         const { row, col, piece, connectDropTarget, isOver, movePiece } = this.props;
         const fill = (row + col) % 2 == 1 ? 'gray' : 'white';
+        const classes = 'square ' + fill;
 
         return connectDropTarget(
-            <div style={{
-                width: squareSize + 'px',
-                height: squareSize + 'px',
-                backgroundColor: fill
-            }}>
+            <div className={classes}>
             {piece !== undefined && !piece.captured
                 && <BoardPiece
                         piece={piece}
                         row={row}
                         col={col}
-                        // turn={turn}
                         movePiece={movePiece}
                     />
             }

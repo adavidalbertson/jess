@@ -1,0 +1,74 @@
+@boardDim: 8;
+@squareSize: 60px;
+
+#app {
+    display: flex;
+    height: 100%;
+}
+
+#game {
+    margin: auto;
+}
+
+#menu {
+    margin: auto;
+
+    .menuButton {
+        background-color: darkslategray;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+
+        &:hover {
+            background-color: steelblue;
+            cursor: pointer;
+        }
+    }
+}
+
+#board {
+    width: @boardDim * @squareSize;
+    height: @boardDim * @squareSize;
+    background-color: red;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.boardPiece {
+    cursor: default;
+}
+
+.boardPiece.canDrag {
+    cursor: move;
+}
+
+.boardPiece.isDragging {
+    opacity: 0.5;
+}
+
+.square {
+    height: @squareSize;
+    width: @squareSize;
+}
+
+.square.gray {
+    background-color: gray;
+    background-color: lightslategray;
+}
+
+.square.white {
+    background-color: white;
+}
+
+.piece {
+    font: 60px Arial;
+    color: black;
+    text-align: center;
+    width: 60px;
+}

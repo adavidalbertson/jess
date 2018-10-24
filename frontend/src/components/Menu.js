@@ -1,8 +1,8 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { MakeSocketAction } from 'react-redux-socket/client';
+import React from "react";
+import { connect } from "react-redux";
+import { MakeSocketAction } from "react-redux-socket/client";
 
-import { newGame, sendMessage } from '../reducers/Socket.js';
+import { newGame, sendMessage } from "../reducers/Socket.js";
 
 class Menu extends React.Component {
     handleNewGame() {
@@ -11,10 +11,16 @@ class Menu extends React.Component {
 
     render() {
         return (
-            <div>
-                <button ref="btn" onClick={this.handleNewGame.bind(this)}>New Game</button>
+            <div id="menu">
+                <button
+                    ref="btn"
+                    className="menuButton"
+                    onClick={this.handleNewGame.bind(this)}
+                >
+                    New Game
+                </button>
             </div>
-        )
+        );
     }
 }
 

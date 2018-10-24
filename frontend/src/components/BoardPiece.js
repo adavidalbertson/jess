@@ -45,7 +45,7 @@ class BoardPiece extends React.Component {
 
         return connectDragSource(
             <div style={{
-                cursor: canDrag ? 'move' : 'default',
+                cursor: isDragging ? 'grabbing' : canDrag ? 'grab' : 'default',
                 opacity: isDragging ? 0.5 : 1
             }}
             >
@@ -60,5 +60,3 @@ export default connect(state => ({
     playerColor: state.GameState.playerColor,
     turn: state.GameState.turn
 }))(DragSource(dragItemTypes.PIECE, moveSource, collect)(BoardPiece));
-
-// export default DragSource(dragItemTypes.PIECE, moveSource, collect)(BoardPiece);

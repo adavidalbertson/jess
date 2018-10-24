@@ -2,3 +2,7 @@
 **/node_modules
 npm-debug.log
 frontend/npm-debug.log
+frontend/public/*.bundle.js
+frontend/public/*.css
+frontend/public/styles/main.css
+frontend/public/bundle.js

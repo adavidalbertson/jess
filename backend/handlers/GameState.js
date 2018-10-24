@@ -144,11 +144,11 @@ const handleMessageActions = function (action, socketEnv, next) {
 
                         if (utils.isCheckMate(nextState.positions,
                             nextState.pieces,
-                            0)) {
+                            nextState.turn)) {
                             broadcast({
                                 type: actions.GAME_OVER,
                                 payload: {
-                                    winner: !gameState.turn,
+                                    winner: gameState.turn,
                                     reason: "checkmate"
                                 }
                             });
