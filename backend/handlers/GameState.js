@@ -1,11 +1,11 @@
-const utils = require('../../common/Utils.js');
-const actions = require('../../common/Actions.js');
-const uuidv1 = require('uuid/v1');
+const utils = require("../../common/Utils.js");
+const actions = require("../../common/Actions.js");
+const uuidv1 = require("uuid/v1");
 
 let gameID;
 let game;
 
-const handleMessageActions = function (action, socketEnv, next) {
+const handleMessageActions = function(action, socketEnv, next) {
     let { dispatch, broadcast, socket, games, socketToGame } = socketEnv;
 
     switch (action.type) {
@@ -20,10 +20,7 @@ const handleMessageActions = function (action, socketEnv, next) {
 
             game = {
                 id: gameID,
-                players: [
-                    null,
-                    null
-                ],
+                players: [null, null],
                 gameState
             };
 
@@ -31,17 +28,18 @@ const handleMessageActions = function (action, socketEnv, next) {
 
             games[gameID] = game;
 
+            // seem to need this dummy dispatch or else broadcast loses its scope
             dispatch({
-                type: actions.JOINED_GAME,
+                type: null
+            });
+
+            broadcast({
+                type: actions.NEW_GAME,
                 payload: {
                     gameID,
                     playerColor: 0,
                     gameState
                 }
-            });
-
-            broadcast({
-                type: actions.NEW_GAME
             });
 
             break;
@@ -52,7 +50,7 @@ const handleMessageActions = function (action, socketEnv, next) {
 
             if (game === undefined) {
                 dispatch({
-                    type: actions.GAME_DOES_NOT_EXIST,
+                    type: actions.GAME_DOES_NOT_EXIST
                 });
                 break;
             } else if (game.players.filter(p => p != null).length > 1) {
@@ -80,13 +78,16 @@ const handleMessageActions = function (action, socketEnv, next) {
                     type: actions.JOINED_GAME,
                     payload: {
                         gameID: gameID,
-                        playerColor: playerColor,
+                        playerColor,
                         gameState: game.gameState
                     }
                 });
 
                 broadcast({
-                    type: actions.OPPONENT_JOINED
+                    type: actions.OPPONENT_JOINED,
+                    payload: {
+                        playerColor
+                    }
                 });
             }
 
@@ -98,14 +99,16 @@ const handleMessageActions = function (action, socketEnv, next) {
 
             if (game === undefined) {
                 dispatch({
-                    type: actions.GAME_DOES_NOT_EXIST,
+                    type: actions.GAME_DOES_NOT_EXIST
                 });
                 break;
             } else {
                 let gameState = game.gameState;
 
-                if (game.players[gameState.turn] != null
-                    && socket.id === game.players[gameState.turn].socketID) {
+                if (
+                    game.players[gameState.turn] != null &&
+                    socket.id === game.players[gameState.turn].socketID
+                ) {
                     let move = action.payload.move;
                     let legal = false;
 
@@ -116,12 +119,13 @@ const handleMessageActions = function (action, socketEnv, next) {
                             move.endCol,
                             gameState.positions,
                             gameState.pieces,
-                            gameState.enPassant);
+                            gameState.enPassant
+                        );
                     } catch (e) {
                         dispatch({
                             type: actions.MOVE_REJECTED,
                             payload: {
-                                reason: 'Invalid move format.'
+                                reason: "Invalid move format."
                             }
                         });
                     }
@@ -131,34 +135,39 @@ const handleMessageActions = function (action, socketEnv, next) {
                             move.piece,
                             move.endRow,
                             move.endCol,
-                            gameState);
+                            gameState
+                        );
 
                         game.gameState = nextState;
 
-                        broadcast({
-                            type: actions.MOVE_APPROVED,
-                            payload: {
-                                gameState: nextState
-                            }
-                        });
-
-                        if (utils.isCheckMate(nextState.positions,
-                            nextState.pieces,
-                            nextState.turn)) {
+                        if (
+                            utils.isCheckMate(
+                                nextState.positions,
+                                nextState.pieces,
+                                nextState.turn
+                            )
+                        ) {
                             broadcast({
                                 type: actions.GAME_OVER,
                                 payload: {
+                                    gameState: nextState,
                                     winner: gameState.turn,
-                                    reason: "checkmate"
+                                    reason: "Checkmate"
+                                }
+                            });
+                        } else {
+                            broadcast({
+                                type: actions.MOVE_APPROVED,
+                                payload: {
+                                    gameState: nextState
                                 }
                             });
                         }
-
                     } else {
                         dispatch({
                             type: actions.MOVE_REJECTED,
                             payload: {
-                                reason: 'Illegal move.'
+                                reason: "Illegal move."
                             }
                         });
                     }
@@ -166,7 +175,7 @@ const handleMessageActions = function (action, socketEnv, next) {
                     dispatch({
                         type: actions.MOVE_REJECTED,
                         payload: {
-                            reason: 'It\'s not your turn.'
+                            reason: "It's not your turn."
                         }
                     });
                     break;
@@ -177,10 +186,13 @@ const handleMessageActions = function (action, socketEnv, next) {
     }
 
     next();
-}
+};
 
-module.exports = function (reactReduxSocketServer) {
+module.exports = function(reactReduxSocketServer) {
     reactReduxSocketServer.onActionIn(handleMessageActions);
-}
+};
 
-module.exports.log = _log => { log = _log; return module.exports }
+module.exports.log = _log => {
+    log = _log;
+    return module.exports;
+};

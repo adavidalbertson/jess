@@ -6,12 +6,23 @@
     height: 100%;
 }
 
+#mainContainer {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 #game {
-    margin: auto;
+    margin: 0 auto;
 }
 
 #menu {
-    margin: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 250px;
 
     .menuButton {
         background-color: darkslategray;
@@ -67,8 +78,47 @@
 }
 
 .piece {
-    font: 60px Arial;
+    font: @squareSize Arial;
     color: black;
     text-align: center;
-    width: 60px;
+    width: @squareSize;
+}
+
+#messages {
+    margin-top: auto;
+    margin-bottom: 50px;
+    .message {
+        font-style: Arial;
+        color: black;
+        text-align: center;
+        display: block;
+    }
+
+    .successMessage {
+        color: darkslategray;
+    }
+
+    .failMessage {
+        color: darkred;
+    }
+}
+
+.fade-enter {
+    opacity: 0.01;
+    // font-size: 0;
+}
+.fade-enter-active {
+    opacity: 1;
+    // font-size: 16px;
+    // transition: opacity 500ms ease-out, font-size 500ms ease-in 500ms;
+    transition: opacity 500ms ease-out;
+}
+.fade-exit {
+    opacity: 1;
+    font-size: 16px;
+}
+.fade-exit-active {
+    opacity: 0.01;
+    font-size: 0;
+    transition: opacity 500ms ease-in, font-size 500ms ease-in 500ms;
 }
