@@ -27,19 +27,21 @@ const handleSocketActions = function (action, socketEnv, next) {
 }
 
 const handleDisconnect = function (socketEnv, next) {
-    console.log('THE SOCKET WAS DISCONNECTED OH NO');
     let { socket } = socketEnv;
 
     let gameID = socketToGame[socket.id];
     let game = games[gameID];
 
     if (gameID === undefined || games[gameID] === undefined) {
-        console.log('wasn\'t in a game anyway');
     } else {
         if (game.players.filter(p => p != null).length > 1) {
             game.players = game.players
-                .map(player => player.socketID === socket.id ? null : player)
+                .map(player => player.socketID === socket.id ? null : player);
 
+                socketEnv.io = socketEnv.io.in(gameID);
+                socketEnv.broadcast({
+                    type: actions.OPPONENT_LEFT
+                })
         } else {
             delete games[gameID];
         }

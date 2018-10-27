@@ -30,7 +30,7 @@ const handleMessageActions = function(action, socketEnv, next) {
 
             // seem to need this dummy dispatch or else broadcast loses its scope
             dispatch({
-                type: null
+                type: "null"
             });
 
             broadcast({

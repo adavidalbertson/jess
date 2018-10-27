@@ -4,6 +4,7 @@ import {
     NEW_GAME,
     JOINED_GAME,
     OPPONENT_JOINED,
+    OPPONENT_LEFT,
     GAME_DOES_NOT_EXIST,
     GAME_IS_FULL,
     MOVE_REJECTED,
@@ -38,6 +39,10 @@ export default function Messages(state = {}, action = {}) {
             } else {
                 return state;
             }
+        case OPPONENT_LEFT:
+            newState.message = "Opponent disconnected."
+            newState.type = FAIL;
+            return newState;
         case GAME_DOES_NOT_EXIST:
             newState.message = "Game does not exist.";
             newState.type = FAIL;

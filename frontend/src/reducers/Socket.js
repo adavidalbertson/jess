@@ -2,7 +2,10 @@ import { MakeSocketAction } from "react-redux-socket/client";
 
 import actions from "../../../common/Actions.js";
 
-export default function Socket(state = { msgs: [] }, action = {}) {
+export default function Socket(
+    state = { opponentConnected: false },
+    action = {}
+) {
     let newState = Object.assign({}, state);
 
     switch (action.type) {
@@ -11,9 +14,16 @@ export default function Socket(state = { msgs: [] }, action = {}) {
         case actions.JOINED_GAME:
             newState.gameID = action.payload.gameID;
             return newState;
+        case actions.OPPONENT_JOINED:
+            newState.opponentConnected = true;
+            return newState;
         case actions.GAME_DOES_NOT_EXIST:
+            //fall through
         case actions.GAME_IS_FULL:
             delete newState.gameID;
+            //fall through
+        case actions.OPPONENT_LEFT:
+            newState.opponentConnected = false;
             return newState;
 
         default:
