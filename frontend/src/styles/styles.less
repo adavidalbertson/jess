@@ -1,44 +1,90 @@
 @boardDim: 8;
 @squareSize: 60px;
 
+@darkColor: darkslategray;
+@lightColor: lightslategray;
+@highlightColor: steelblue;
+
 #app {
-    display: flex;
-    height: 100%;
+    box-sizing: border-box;
+
+    *,
+    *:before,
+    *:after {
+        box-sizing: inherit;
+    }
 }
 
 #mainContainer {
-    margin: 0 auto;
+    height: 100%;
     display: flex;
-    flex-direction: column;
     align-items: center;
+
+    &.gameContainer {
+        flex-direction: row;
+        justify-content: space-evenly;
+
+        .menuContainer {
+            max-width: @boardDim * @squareSize;
+            height: @boardDim * @squareSize;
+
+            #menu {
+                height: 60px;
+            }
+        }
+    }
+
+    &.menuContainer {
+        flex-direction: column;
+
+        #messages {
+            text-align: center;
+        }
+
+        .menuButton {
+            padding: 15px 32px;
+        }
+    }
+}
+
+.menuContainer {
+    flex-direction: column;
+    display: flex;
+
+    #messages {
+        flex: 1;
+    }
 }
 
 #game {
-    margin: 0 auto;
+    // margin: 0 auto;
 }
 
 #menu {
-    padding: 10px;
+    padding: 5px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 250px;
+    flex-direction: row;
 
     .menuButton {
-        background-color: darkslategray;
+        background-color: @darkColor;
         border: none;
         color: white;
-        padding: 15px 32px;
         text-align: center;
         text-decoration: none;
-        display: inline-block;
         border-radius: 5px;
         font-size: 16px;
         font-weight: bold;
+        flex: 1;
+        margin: 5px;
 
         &:hover {
-            background-color: steelblue;
+            background-color: @highlightColor;
             cursor: pointer;
+        }
+
+        &:disabled {
+            background-color: @lightColor;
+            cursor: default;
         }
     }
 }
@@ -46,35 +92,40 @@
 #board {
     width: @boardDim * @squareSize;
     height: @boardDim * @squareSize;
-    background-color: red;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.captured {
+    width: @boardDim * @squareSize;
+    min-height: @squareSize + 5;
     display: flex;
     flex-wrap: wrap;
 }
 
 .boardPiece {
     cursor: default;
-}
 
-.boardPiece.canDrag {
-    cursor: move;
-}
+    &.canDrag {
+        cursor: move;
+    }
 
-.boardPiece.isDragging {
-    opacity: 0.5;
+    &.isDragging {
+        opacity: 0.5;
+    }
 }
 
 .square {
     height: @squareSize;
     width: @squareSize;
-}
 
-.square.gray {
-    background-color: gray;
-    background-color: lightslategray;
-}
+    &.gray {
+        background-color: @lightColor;
+    }
 
-.square.white {
-    background-color: white;
+    &.white {
+        background-color: white;
+    }
 }
 
 .piece {
@@ -85,17 +136,17 @@
 }
 
 #messages {
-    margin-top: auto;
-    margin-bottom: 50px;
+    padding: 5px;
+
     .message {
-        font-style: Arial;
+        font-family: Arial;
         color: black;
-        text-align: center;
         display: block;
+        height: @squareSize / 2;
     }
 
     .successMessage {
-        color: darkslategray;
+        color: @darkColor;
     }
 
     .failMessage {
@@ -107,18 +158,100 @@
     opacity: 0.01;
     // font-size: 0;
 }
+
 .fade-enter-active {
     opacity: 1;
     // font-size: 16px;
     // transition: opacity 500ms ease-out, font-size 500ms ease-in 500ms;
     transition: opacity 500ms ease-out;
 }
+
 .fade-exit {
     opacity: 1;
     font-size: 16px;
 }
+
 .fade-exit-active {
     opacity: 0.01;
     font-size: 0;
     transition: opacity 500ms ease-in, font-size 500ms ease-in 500ms;
+}
+
+.modalBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.modal {
+    position: fixed;
+    background-color: white;
+    height: auto;
+    width: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 2;
+    text-align: right;
+
+    .modalContent {
+        padding: 10px;
+        text-align: unset;
+    }
+
+    .closeModalButton {
+        color: @darkColor;
+        cursor: pointer;
+
+        &:hover {
+            color: @highlightColor;
+        }
+    }
+}
+
+#copyUrlContainer {
+    white-space: nowrap;
+
+    .copyInput {
+        min-height: 40px;
+        width: 500px;
+        padding: 7px 8px;
+        font-size: 16px;
+        color: @darkColor;
+        vertical-align: middle;
+        border: 1px solid @darkColor;
+        border-radius: 5px;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .copyButton {
+        min-height: 40px;
+        position: relative;
+        display: inline-block;
+        padding: 6px 12px;
+        font-size: 16px;
+        font-weight: 700;
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 24px;
+        color: white;
+        background-color: @darkColor;
+        vertical-align: middle;
+        border: none;
+        text-decoration: none;
+        border-radius: 5px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+
+        &:hover {
+            background-color: @highlightColor;
+            cursor: pointer;
+        }
+    }
 }

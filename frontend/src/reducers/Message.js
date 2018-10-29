@@ -37,10 +37,12 @@ export default function Messages(state = {}, action = {}) {
                 newState.type = SUCCESS;
                 return newState;
             } else {
-                return state;
+                newState.message = "Joined game.";
+                newState.type = SUCCESS;
+                return newState;
             }
         case OPPONENT_LEFT:
-            newState.message = "Opponent disconnected."
+            newState.message = "Opponent disconnected.";
             newState.type = FAIL;
             return newState;
         case GAME_DOES_NOT_EXIST:
@@ -69,6 +71,12 @@ export default function Messages(state = {}, action = {}) {
                 newState.type = FAIL;
             }
             return newState;
+        case MOVE_REJECTED:
+            newState.message = action.payload.reason
+                ? "Move rejected: " + action.payload.reason
+                : "Move rejected."
+                newState.type = FAIL;
+                return newState;
         default:
             return state;
     }

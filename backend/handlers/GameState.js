@@ -30,16 +30,21 @@ const handleMessageActions = function(action, socketEnv, next) {
 
             // seem to need this dummy dispatch or else broadcast loses its scope
             dispatch({
-                type: "null"
-            });
-
-            broadcast({
-                type: actions.NEW_GAME,
+                type: actions.JOINED_GAME,
                 payload: {
                     gameID,
                     playerColor: 0,
                     gameState
                 }
+            });
+
+            broadcast({
+                type: actions.NEW_GAME,
+                // payload: {
+                //     gameID,
+                //     playerColor: 0,
+                //     gameState
+                // }
             });
 
             break;

@@ -18,15 +18,7 @@ export default class Captured extends React.Component {
         });
 
         return (
-            <div
-                className="captured"
-                style={{
-                    width: boardDim * squareSize,
-                    minHeight: squareSize + 5,
-                    display: "flex",
-                    flexWrap: "wrap"
-                }}
-            >
+            <div className="captured">
                 {capturedPieces.map(p => (
                     <Piece key={p.id} piece={p} />
                 ))}

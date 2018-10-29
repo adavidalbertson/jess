@@ -19,12 +19,19 @@ export default function GameState(state = setupNewBoard(), action = {}) {
         case PENDING_MOVE:
             newState.pendingMove = true;
             return newState;
-        case NEW_GAME:
+        // case NEW_GAME:
             //fall through
         case JOINED_GAME:
             newState.playerColor = action.payload.playerColor;
-            //fall through
+            newState.pieces = action.payload.gameState.pieces;
+            newState.positions = action.payload.gameState.positions;
+            newState.enPassant = action.payload.gameState.enPassant;
+            newState.captured = action.payload.gameState.captured;
+            newState.turn = action.payload.gameState.turn;
+            newState.pendingMove = false;
+            return newState;
         case GAME_OVER:
+            newState.pendingMove = true;
             //fall through
         case MOVE_APPROVED:
             newState.pieces = action.payload.gameState.pieces;
@@ -35,7 +42,6 @@ export default function GameState(state = setupNewBoard(), action = {}) {
             newState.pendingMove = false;
             return newState;
         case MOVE_REJECTED:
-            console.log("Move got rejected:", action.payload.reason);
             newState.pendingMove = false;
             return newState;
         default:

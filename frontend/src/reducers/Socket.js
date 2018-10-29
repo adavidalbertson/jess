@@ -9,7 +9,7 @@ export default function Socket(
     let newState = Object.assign({}, state);
 
     switch (action.type) {
-        case actions.NEW_GAME:
+        // case actions.NEW_GAME:
             //fall through
         case actions.JOINED_GAME:
             newState.gameID = action.payload.gameID;

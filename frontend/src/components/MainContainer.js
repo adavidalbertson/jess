@@ -32,12 +32,21 @@ class MainContainer extends React.Component {
     }
 
     render() {
-        const { gameID, history } = this.props;
+        const { gameID } = this.props;
 
-        return (
-            <div id="MainContainer">
-                {gameID === undefined ? <Menu /> : <Game />}
+        return gameID === undefined ? (
+            <div id="MainContainer" className="menuContainer">
+                <div style={{ flex: 1 }} />
+                <Menu />
                 <Messages />
+            </div>
+        ) : (
+            <div id="MainContainer" className="gameContainer">
+                <Game />
+                <div className="menuContainer">
+                    <Messages />
+                    <Menu />
+                </div>
             </div>
         );
     }

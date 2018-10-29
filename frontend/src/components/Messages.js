@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
+import { boardDim } from "../../../common/Constants.js";
 import { SUCCESS, FAIL } from "../reducers/Message.js";
 
 class Messages extends React.Component {
@@ -17,15 +18,15 @@ class Messages extends React.Component {
         let newState = Object.assign({}, this.state);
         let messageTimeout = window.setTimeout(
             this.messageFallOff.bind(this),
-            10000
+            30000
         );
 
-        newState.messages.unshift(message);
-        newState.timeouts.unshift(messageTimeout);
+        newState.messages.push(message);
+        newState.timeouts.push(messageTimeout);
 
-        while (newState.messages.length > 5) {
-            newState.messages.pop();
-            newState.timeouts.pop();
+        while (newState.messages.length >= 2 * (boardDim - 1)) {
+            newState.messages.shift();
+            newState.timeouts.shift();
         }
 
         this.setState(newState);
@@ -34,8 +35,8 @@ class Messages extends React.Component {
     messageFallOff() {
         let newState = Object.assign({}, this.state);
 
-        newState.messages.pop();
-        newState.timeouts.pop();
+        newState.messages.shift();
+        newState.timeouts.shift();
 
         this.setState(newState);
     }
