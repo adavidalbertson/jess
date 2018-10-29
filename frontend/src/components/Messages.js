@@ -16,10 +16,11 @@ class Messages extends React.Component {
     componentWillReceiveProps(props) {
         const { message } = props;
         let newState = Object.assign({}, this.state);
-        let messageTimeout = window.setTimeout(
-            this.messageFallOff.bind(this),
-            30000
-        );
+        // let messageTimeout = window.setTimeout(
+        //     this.messageFallOff.bind(this),
+        //     30000
+        // );
+        let messageTimeout = null;
 
         newState.messages.push(message);
         newState.timeouts.push(messageTimeout);

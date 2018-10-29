@@ -25,11 +25,15 @@
         justify-content: space-evenly;
 
         .menuContainer {
-            max-width: @boardDim * @squareSize;
+            width: @boardDim * @squareSize;
             height: @boardDim * @squareSize;
 
             #menu {
                 height: 60px;
+
+                &>.menuButton {
+                    padding: unset;
+                }
             }
         }
     }
@@ -40,11 +44,23 @@
         #messages {
             text-align: center;
         }
-
-        .menuButton {
-            padding: 15px 32px;
-        }
     }
+}
+
+#splash {
+    flex-direction: column;
+    align-items: center;
+    display: flex;
+    height: 100%;
+
+    #messages {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+.menuButton {
+    padding: 15px 32px;
 }
 
 .menuContainer {
@@ -64,28 +80,28 @@
     padding: 5px;
     display: flex;
     flex-direction: row;
+}
 
-    .menuButton {
-        background-color: @darkColor;
-        border: none;
-        color: white;
-        text-align: center;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: bold;
-        flex: 1;
-        margin: 5px;
+.menuButton {
+    background-color: @darkColor;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    flex: 1;
+    margin: 5px;
 
-        &:hover {
-            background-color: @highlightColor;
-            cursor: pointer;
-        }
+    &:hover {
+        background-color: @highlightColor;
+        cursor: pointer;
+    }
 
-        &:disabled {
-            background-color: @lightColor;
-            cursor: default;
-        }
+    &:disabled {
+        background-color: @lightColor;
+        cursor: default;
     }
 }
 
@@ -202,7 +218,7 @@
 
     .modalContent {
         padding: 10px;
-        text-align: unset;
+        text-align: center;
     }
 
     .closeModalButton {

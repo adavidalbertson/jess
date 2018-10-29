@@ -37,6 +37,15 @@ export function newGame() {
     });
 }
 
+export function restartGame(playerColor) {
+    return MakeSocketAction({
+        type: actions.RESTART_GAME,
+        payload: {
+            playerColor
+        }
+    })
+}
+
 export function submitMove(move) {
     return MakeSocketAction({
         type: actions.SUBMIT_MOVE,

@@ -3,12 +3,13 @@ import { connect } from "react-redux";
 
 import Modal from "./Modal.js";
 import CopyLink from "./CopyLink.js";
-import { newGame } from "../reducers/Socket.js";
+import { restartGame } from "../reducers/Socket.js";
 
 class Menu extends React.Component {
     componentWillMount() {
         this.setState({
-            showInviteModal: false
+            showInviteModal: false,
+            showChooseColorModal: false
         });
     }
 
@@ -20,13 +21,22 @@ class Menu extends React.Component {
         this.setState(newState);
     }
 
-    handleNewGame() {
-        this.props.dispatch(newGame());
+    toggleChooseColorModal() {
+        let newState = Object.assign({}, this.state);
+
+        newState.showChooseColorModal = !newState.showChooseColorModal;
+
+        this.setState(newState);
+    }
+
+    handleNewGame(color) {
+        this.toggleChooseColorModal();
+        this.props.dispatch(restartGame(color));
     }
 
     render() {
-        const { gameID, opponentConnected } = this.props;
-        const { showInviteModal } = this.state;
+        const { gameID, opponentConnected, gameOver, won } = this.props;
+        const { showInviteModal, showChooseColorModal } = this.state;
 
         const inviteModal = (
             <Modal closeModal={ () => this.toggleInviteModal.bind(this) }>
@@ -34,26 +44,38 @@ class Menu extends React.Component {
             </Modal>
         );
 
-        const inviteButton = (
-            <button
-                className="menuButton"
-                onClick={ this.toggleInviteModal.bind(this) }
-            >
-                Invite a Friend
-            </button>
+        const chooseColorModal = (
+            <Modal closeModal={ () => this.toggleChooseColorModal.bind(this) }>
+                <p>Choose which color to play as:</p>
+                <button className="menuButton"
+                    onClick={ this.handleNewGame.bind(this, 0) }>
+                    White
+                </button>
+                <button className="menuButton"
+                    onClick={ this.handleNewGame.bind(this, 1) }>
+                    Black
+                </button>
+            </Modal>
         );
 
         return (
             <div id="menu">
                 <button
                     className="menuButton"
-                    disabled={ this.props.opponentConnected }
-                    onClick={ this.handleNewGame.bind(this) }
+                    disabled={ opponentConnected && (!gameOver || !won) }
+                    onClick={ this.toggleChooseColorModal.bind(this) }
                 >
                     New Game
                 </button>
-                { gameID !== undefined && inviteButton }
+                <button
+                className="menuButton"
+                disabled={ opponentConnected }
+                onClick={ this.toggleInviteModal.bind(this) }
+            >
+                Invite a Friend
+            </button>
                 { showInviteModal && inviteModal }
+                { showChooseColorModal && chooseColorModal }
             </div>
         );
     }
@@ -61,5 +83,7 @@ class Menu extends React.Component {
 
 export default connect(state => ({
     gameID: state.Socket.gameID,
-    opponentConnected: state.Socket.opponentConnected
+    opponentConnected: state.Socket.opponentConnected,
+    gameOver: state.GameState.gameOver,
+    won: state.GameState.won
 }))(Menu);

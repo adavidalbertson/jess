@@ -1,4 +1,5 @@
 const NEW_GAME = 'Socket/NEW_GAME';
+const RESTART_GAME = 'Socket/RESTART_GAME';
 const JOIN_GAME = 'Socket/JOIN_GAME';
 const JOINED_GAME = 'Socket/JOINED_GAME';
 const OPPONENT_JOINED = 'Socket/OPPONENT_JOINED';
@@ -13,6 +14,7 @@ const GAME_OVER = 'GameState/GAME_OVER';
 
 module.exports = {
     NEW_GAME,
+    RESTART_GAME,
     JOIN_GAME,
     JOINED_GAME,
     OPPONENT_JOINED,

@@ -28,7 +28,6 @@ const handleMessageActions = function(action, socketEnv, next) {
 
             games[gameID] = game;
 
-            // seem to need this dummy dispatch or else broadcast loses its scope
             dispatch({
                 type: actions.JOINED_GAME,
                 payload: {
@@ -38,14 +37,9 @@ const handleMessageActions = function(action, socketEnv, next) {
                 }
             });
 
-            broadcast({
-                type: actions.NEW_GAME,
-                // payload: {
-                //     gameID,
-                //     playerColor: 0,
-                //     gameState
-                // }
-            });
+            // broadcast({
+            //     type: actions.NEW_GAME
+            // });
 
             break;
 
@@ -152,6 +146,8 @@ const handleMessageActions = function(action, socketEnv, next) {
                                 nextState.turn
                             )
                         ) {
+                            game.gameState.winner = gameState.turn;
+
                             broadcast({
                                 type: actions.GAME_OVER,
                                 payload: {
@@ -188,6 +184,35 @@ const handleMessageActions = function(action, socketEnv, next) {
             }
 
             break;
+
+        case actions.RESTART_GAME:
+            gameID = socketToGame[socket.id];
+            game = games[gameID];
+            let players = game.players;
+
+            if (
+                game.gameState.winner !== undefined &&
+                players[game.gameState.winner].socketID !== socket.id
+            ) {
+                break;
+            }
+
+            let swap = false;
+
+            if (players[action.payload.playerColor].socketID !== socket.ID) {
+                players.reverse();
+                swap = true;
+            }
+
+            game.gameState = utils.setupNewBoard();
+
+            broadcast({
+                type: actions.RESTART_GAME,
+                payload: {
+                    gameState: utils.setupNewBoard(),
+                    swap
+                }
+            });
     }
 
     next();

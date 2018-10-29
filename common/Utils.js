@@ -31,7 +31,8 @@ function setupNewBoard() {
         captured,
         turn: 0,
         enPassant: null,
-        moves: 0
+        moves: 0,
+        gameOver: false
     };
 }
 

@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { MakeSocketAction } from "react-redux-socket/client";
 
+import Splash from "./Splash.js";
 import Game from "./Game.js";
 import Menu from "./Menu.js";
 import Messages from "./Messages.js";
@@ -35,11 +36,7 @@ class MainContainer extends React.Component {
         const { gameID } = this.props;
 
         return gameID === undefined ? (
-            <div id="MainContainer" className="menuContainer">
-                <div style={{ flex: 1 }} />
-                <Menu />
-                <Messages />
-            </div>
+            <Splash />
         ) : (
             <div id="MainContainer" className="gameContainer">
                 <Game />

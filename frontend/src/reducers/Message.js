@@ -3,6 +3,7 @@ import uuidv1 from "uuid/v1";
 import {
     NEW_GAME,
     JOINED_GAME,
+    RESTART_GAME,
     OPPONENT_JOINED,
     OPPONENT_LEFT,
     GAME_DOES_NOT_EXIST,
@@ -30,6 +31,11 @@ export default function Messages(state = {}, action = {}) {
             newState.message = "Joined game.";
             newState.type = SUCCESS;
             newState.playerColor = action.payload.playerColor;
+            return newState;
+        case RESTART_GAME:
+            newState.message = "Started new game.";
+            newState.type = SUCCESS;
+            newState.playerColor = (state.playerColor + action.payload.swap) % 2;
             return newState;
         case OPPONENT_JOINED:
             if (action.payload.playerColor != state.playerColor) {
