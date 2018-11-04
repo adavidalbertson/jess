@@ -11,7 +11,7 @@ module.exports = {
         ref: 'origin/master',
         repo: 'git@github.com:adavidalbertson/jess.git',
         path: '/home/ec2-user/jess',
-        'post-deploy': 'cd ./frontend && npm install && node run build'
+        'post-deploy': 'cd ./frontend && npm install && npm run build'
             + ' && cd ../backend && npm install && pm2 startOrRestart ecosystem.config.js'
       }
     }
