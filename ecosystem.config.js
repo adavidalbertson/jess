@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: "jess",
-            script: "./backend/index.js"
+            script: "./index.js"
         }
     ],
     deploy: {
