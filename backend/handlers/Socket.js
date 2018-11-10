@@ -22,6 +22,7 @@ const handleSocketActions = function (action, socketEnv, next) {
 
     socketEnv.socket = socketEnv.socket.join(gameID);
     socketEnv.io = socketEnv.io.in(gameID);
+    socketEnv.io.rooms = [gameID];
 
     next();
 }

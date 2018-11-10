@@ -48,11 +48,11 @@ class Menu extends React.Component {
             <Modal closeModal={ () => this.toggleChooseColorModal.bind(this) }>
                 <p>Choose which color to play as:</p>
                 <button className="menuButton"
-                    onClick={ this.handleNewGame.bind(this, 1) }>
+                    onClick={ this.handleNewGame.bind(this, 0) }>
                     White
                 </button>
                 <button className="menuButton"
-                    onClick={ this.handleNewGame.bind(this, 0) }>
+                    onClick={ this.handleNewGame.bind(this, 1) }>
                     Black
                 </button>
             </Modal>
