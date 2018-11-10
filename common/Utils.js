@@ -137,10 +137,15 @@ function isLegalMove(
                     return false;
                 }
             } else if (Math.abs(piece.col - endCol) === 1) {
+                console.log(enPassant);
                 if (
                     !pieces[positions[endRow][endCol]] &&
-                    (enPassant != null &&
-                        (enPassant.row !== endRow || enPassant.col !== endCol))
+                    (enPassant == null ||
+                        (enPassant != null &&
+                            (enPassant.row !== endRow ||
+                                enPassant.col !== endCol ||
+                                pieces[enPassant.pieceID].color ===
+                                    piece.color)))
                 ) {
                     // console.log('pawns can only move diagonally when capturing')
                     return false;
@@ -237,35 +242,6 @@ function intermediateSquares(startRow, startCol, endRow, endCol) {
 }
 
 function blocked(startRow, startCol, endRow, endCol, positions) {
-    // let x = startRow;
-    // let y = startCol;
-    // let xInc = 0;
-    // let yInc = 0;
-
-    // if (startRow < endRow) {
-    //     xInc = 1;
-    // } else if (startRow > endRow) {
-    //     xInc = -1;
-    // }
-
-    // if (startCol < endCol) {
-    //     yInc = 1;
-    // } else if (startCol > endCol) {
-    //     yInc = -1;
-    // }
-
-    // x += xInc;
-    // y += yInc;
-
-    // while (x !== endRow || y !== endCol) {
-    //     if (positions[x][y]) {
-    //         return true;
-    //     }
-
-    //     x += xInc;
-    //     y += yInc;
-    // }
-
     for (let square of intermediateSquares(
         startRow,
         startCol,
@@ -417,20 +393,22 @@ function getNextState(piece, endRow, endCol, state) {
     return newState;
 }
 
-function isUnderAttack(row, col, positions, pieces, pieceColor) {
-    let opposingPieces = pieces.filter(p => p.color !== pieceColor);
-    for (let piece in opposingPieces) {
-        if (
-            isLegalMove(
-                opposingPieces[piece],
-                row,
-                col,
-                positions,
-                pieces,
-                null,
-                false
-            )
-        ) {
+function isUnderAttack(
+    row,
+    col,
+    positions,
+    pieces,
+    pieceColor,
+    includeKing = true
+) {
+    let opposingPieces = pieces.filter(
+        p =>
+            p.color !== pieceColor &&
+            !p.captured &&
+            (includeKing || p.type !== pieceTypes.KING)
+    );
+    for (let piece of opposingPieces) {
+        if (isLegalMove(piece, row, col, positions, pieces, null, false)) {
             return true;
         }
     }
@@ -496,7 +474,7 @@ function isCheckMate(positions, pieces, pieceColor) {
         return false;
     }
 
-    const { KING } = pieceTypes;
+    const KING = pieceTypes.KING;
     let king = pieces.find(
         piece => piece.type === KING && piece.color === pieceColor
     );
@@ -563,7 +541,8 @@ function isCheckMate(positions, pieces, pieceColor) {
                     square.col,
                     positions,
                     pieces,
-                    attacker.color
+                    attacker.color,
+                    false
                 )
             )
         ) {
