@@ -141,9 +141,7 @@ const handleMessageActions = function(action, socketEnv, next) {
                     move.piece,
                     move.endRow,
                     move.endCol,
-                    gameState.positions,
-                    gameState.pieces,
-                    gameState.enPassant
+                    gameState
                 );
             } catch (e) {
                 dispatch({
@@ -176,13 +174,7 @@ const handleMessageActions = function(action, socketEnv, next) {
 
             game.gameState = nextState;
 
-            if (
-                utils.isCheckMate(
-                    nextState.positions,
-                    nextState.pieces,
-                    nextState.turn
-                )
-            ) {
+            if (utils.isCheckMate(nextState, nextState.turn)) {
                 game.gameState.winner = gameState.turn;
 
                 broadcast({

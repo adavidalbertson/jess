@@ -1,14 +1,18 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React from "react";
+import { connect } from "react-redux";
 
-import Board from './Board.js';
-import Captured from './Captured.js';
+import Board from "./Board.js";
+import Captured from "./Captured.js";
 
-import { pendingMove, moveApproved } from '../reducers/GameState.js';
+import { pendingMove, moveApproved } from "../reducers/GameState.js";
 
-import { submitMove } from '../reducers/Socket.js';
+import { submitMove } from "../reducers/Socket.js";
 
-import { setupNewBoard, getNextState, isLegalMove } from '../../../common/Utils.js'
+import {
+    setupNewBoard,
+    getNextState,
+    isLegalMove
+} from "../../../common/Utils.js";
 
 class Game extends React.Component {
     componentWillMount() {
@@ -20,7 +24,7 @@ class Game extends React.Component {
     }
 
     handleMovePiece(piece, endRow, endCol) {
-        if (!isLegalMove(piece, endRow, endCol, this.state.positions, this.state.pieces, this.state.enPassant)) {
+        if (!isLegalMove(piece, endRow, endCol, this.state)) {
             return;
         }
 
@@ -49,7 +53,7 @@ class Game extends React.Component {
                     pieces={this.state.pieces}
                 />
             </div>
-        )
+        );
     }
 }
 

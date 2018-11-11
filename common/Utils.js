@@ -1,4 +1,3 @@
-// import { boardDim, pieceTypes } from './Constants.js';
 const { boardDim, pieceTypes } = require("./Constants.js");
 
 function setupNewBoard() {
@@ -66,16 +65,9 @@ function getPieceResource(color, type) {
     }
 }
 
-function isLegalMove(
-    piece,
-    endRow,
-    endCol,
-    positions,
-    pieces,
-    enPassant,
-    checkCheck = true
-) {
+function isLegalMove(piece, endRow, endCol, state, checkCheck = true) {
     const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
+    const { positions, pieces, enPassant } = state;
 
     if (piece.captured) return false;
 
@@ -177,15 +169,7 @@ function isLegalMove(
         const king = nextState.pieces.find(
             p => p.type === KING && p.color === piece.color
         );
-        if (
-            isUnderAttack(
-                king.row,
-                king.col,
-                nextState.positions,
-                nextState.pieces,
-                piece.color
-            )
-        )
+        if (isUnderAttack(king.row, king.col, nextState, piece.color))
             return false;
     }
 
@@ -259,16 +243,7 @@ function blocked(startRow, startCol, endRow, endCol, positions) {
 function getStateDiff(piece, endRow, endCol, state) {
     let diff = {};
 
-    if (
-        !isLegalMove(
-            piece,
-            endRow,
-            endCol,
-            state.positions,
-            state.pieces,
-            state.enPassant
-        )
-    ) {
+    if (!isLegalMove(piece, endRow, endCol, state)) {
         return diff;
     }
 
@@ -326,19 +301,6 @@ function getStateDiff(piece, endRow, endCol, state) {
 }
 
 function getNextState(piece, endRow, endCol, state) {
-    // if (
-    //     !isLegalMove(
-    //         piece,
-    //         endRow,
-    //         endCol,
-    //         state.positions,
-    //         state.pieces,
-    //         state.enPassant
-    //     )
-    // ) {
-    //     return state;
-    // }
-
     // let newState = Object.assign({}, state);
     let newState = JSON.parse(JSON.stringify(state)); //deep copy
 
@@ -393,14 +355,9 @@ function getNextState(piece, endRow, endCol, state) {
     return newState;
 }
 
-function isUnderAttack(
-    row,
-    col,
-    positions,
-    pieces,
-    pieceColor,
-    includeKing = true
-) {
+function isUnderAttack(row, col, state, pieceColor, includeKing = true) {
+    const { pieces } = state;
+
     let opposingPieces = pieces.filter(
         p =>
             p.color !== pieceColor &&
@@ -408,7 +365,7 @@ function isUnderAttack(
             (includeKing || p.type !== pieceTypes.KING)
     );
     for (let piece of opposingPieces) {
-        if (isLegalMove(piece, row, col, positions, pieces, null, false)) {
+        if (isLegalMove(piece, row, col, state, false)) {
             return true;
         }
     }
@@ -416,8 +373,10 @@ function isUnderAttack(
     return false;
 }
 
-function getAttackers(row, col, positions, pieces, pieceColor) {
-    if (!isUnderAttack(row, col, positions, pieces, pieceColor)) {
+function getAttackers(row, col, state, pieceColor) {
+    const { pieces } = state;
+
+    if (!isUnderAttack(row, col, state, pieceColor)) {
         return [];
     }
 
@@ -425,7 +384,7 @@ function getAttackers(row, col, positions, pieces, pieceColor) {
 
     for (let i in pieces.filter(p => p.color !== pieceColor)) {
         let piece = pieces[i];
-        if (isLegalMove(piece, row, col, positions, pieces, null, false)) {
+        if (isLegalMove(piece, row, col, state, false)) {
             attackers.push(piece);
         }
     }
@@ -433,35 +392,22 @@ function getAttackers(row, col, positions, pieces, pieceColor) {
     return attackers;
 }
 
-function isCheck(positions, pieces, pieceColor) {
+function isCheck(state, pieceColor) {
+    const { pieces } = state;
     const { KING } = pieceTypes;
     let king = pieces.find(
         piece => piece.type === KING && piece.color === pieceColor
     );
 
-    if (!isUnderAttack(king.row, king.col, positions, pieces, king.color)) {
+    if (!isUnderAttack(king.row, king.col, state, king.color)) {
         return false;
     }
 
-    let attackers = getAttackers(
-        king.row,
-        king.col,
-        positions,
-        pieces,
-        king.color
-    );
+    let attackers = getAttackers(king.row, king.col, state, king.color);
 
     for (let i in attackers) {
         let attacker = attackers[i];
-        if (
-            !isUnderAttack(
-                attacker.row,
-                attacker.col,
-                positions,
-                pieces,
-                attacker.color
-            )
-        ) {
+        if (!isUnderAttack(attacker.row, attacker.col, state, attacker.color)) {
             return true;
         }
     }
@@ -469,8 +415,9 @@ function isCheck(positions, pieces, pieceColor) {
     return false;
 }
 
-function isCheckMate(positions, pieces, pieceColor) {
-    if (!isCheck(positions, pieces, pieceColor)) {
+function isCheckMate(state, pieceColor) {
+    const { pieces } = state;
+    if (!isCheck(state, pieceColor)) {
         return false;
     }
 
@@ -481,49 +428,18 @@ function isCheckMate(positions, pieces, pieceColor) {
 
     for (let c = -1; c++; c <= 1) {
         for (let r = -1; r++; r <= 1) {
-            if (
-                !isLegalMove(
-                    king,
-                    king.row + r,
-                    king.col + c,
-                    positions,
-                    pieces,
-                    null
-                )
-            ) {
+            if (!isLegalMove(king, king.row + r, king.col + c, state)) {
                 continue;
             }
 
-            if (
-                !isUnderAttack(
-                    king.row + r,
-                    king.col + c,
-                    positions,
-                    pieces,
-                    king.color
-                )
-            ) {
+            if (!isUnderAttack(king.row + r, king.col + c, state, king.color)) {
                 return false;
             }
         }
     }
 
-    for (let attacker of getAttackers(
-        king.row,
-        king.col,
-        positions,
-        pieces,
-        king.color
-    )) {
-        if (
-            isUnderAttack(
-                attacker.row,
-                attacker.col,
-                positions,
-                pieces,
-                attacker.color
-            )
-        ) {
+    for (let attacker of getAttackers(king.row, king.col, state, king.color)) {
+        if (isUnderAttack(attacker.row, attacker.col, state, attacker.color)) {
             continue;
         }
 
@@ -539,8 +455,7 @@ function isCheckMate(positions, pieces, pieceColor) {
                 isUnderAttack(
                     square.row,
                     square.col,
-                    positions,
-                    pieces,
+                    state,
                     attacker.color,
                     false
                 )

@@ -1,18 +1,17 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { DragSource } from 'react-dnd';
+import React from "react";
+import { connect } from "react-redux";
+import { DragSource } from "react-dnd";
 
-import Piece from './Piece.js';
+import Piece from "./Piece.js";
 
-import { movePiece } from '../reducers/GameState.js';
-
-import { dragItemTypes } from '../../../common/Constants.js';
-import { isLegalMove } from '../../../common/Utils.js';
+import { dragItemTypes } from "../../../common/Constants.js";
 
 const moveSource = {
     canDrag(props) {
         const { piece, turn, pendingMove, playerColor } = props;
-        return piece.color === turn && piece.color === playerColor && !pendingMove;
+        return (
+            piece.color === turn && piece.color === playerColor && !pendingMove
+        );
     },
 
     beginDrag(props) {
@@ -36,7 +35,7 @@ function collect(dragSourceConnect, monitor) {
         connectDragSource: dragSourceConnect.dragSource(),
         isDragging: monitor.isDragging(),
         canDrag: monitor.canDrag()
-    }
+    };
 }
 
 class BoardPiece extends React.Component {
@@ -44,10 +43,15 @@ class BoardPiece extends React.Component {
         const { piece, connectDragSource, isDragging, canDrag } = this.props;
 
         return connectDragSource(
-            <div style={{
-                cursor: isDragging ? 'grabbing' : canDrag ? 'grab' : 'default',
-                opacity: isDragging ? 0.5 : 1
-            }}
+            <div
+                style={{
+                    cursor: isDragging
+                        ? "grabbing"
+                        : canDrag
+                            ? "grab"
+                            : "default",
+                    opacity: isDragging ? 0.5 : 1
+                }}
             >
                 <Piece piece={piece} />
             </div>
