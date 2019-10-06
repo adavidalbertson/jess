@@ -65,7 +65,7 @@ function getPieceResource(color, type) {
     }
 }
 
-function isLegalMove(piece, endRow, endCol, state, checkCheck = true) {
+function isLegalMove(piece, endRow, endCol, state) {
     const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
     const { positions, pieces, enPassant } = state;
 
@@ -129,7 +129,7 @@ function isLegalMove(piece, endRow, endCol, state, checkCheck = true) {
                     return false;
                 }
             } else if (Math.abs(piece.col - endCol) === 1) {
-                console.log(enPassant);
+                // console.log("En passant: ", enPassant);
                 if (
                     !pieces[positions[endRow][endCol]] &&
                     (enPassant == null ||
@@ -160,18 +160,14 @@ function isLegalMove(piece, endRow, endCol, state, checkCheck = true) {
     const captureTarget = pieces[positions[endRow][endCol]];
     if (captureTarget && piece.color === captureTarget.color) return false;
 
-    if (checkCheck) {
-        const nextState = getNextState(piece, endRow, endCol, {
-            pieces,
-            positions,
-            enPassant
-        });
-        const king = nextState.pieces.find(
-            p => p.type === KING && p.color === piece.color
-        );
-        if (isUnderAttack(king.row, king.col, nextState, piece.color))
-            return false;
-    }
+    const nextState = getNextState(piece, endRow, endCol, {
+        pieces,
+        positions,
+        enPassant
+    });
+
+    if(isCheck(nextState, piece.color))
+        return false;
 
     return true;
 }
@@ -365,7 +361,7 @@ function isUnderAttack(row, col, state, pieceColor, includeKing = true) {
             (includeKing || p.type !== pieceTypes.KING)
     );
     for (let piece of opposingPieces) {
-        if (isLegalMove(piece, row, col, state, false)) {
+        if (isLegalMove(piece, row, col, state)) {
             return true;
         }
     }
@@ -382,9 +378,13 @@ function getAttackers(row, col, state, pieceColor) {
 
     let attackers = [];
 
-    for (let i in pieces.filter(p => p.color !== pieceColor)) {
-        let piece = pieces[i];
-        if (isLegalMove(piece, row, col, state, false)) {
+    for (let piece of pieces) {
+        // For some reason filtering these out beforehand causes attackers to
+        // not always be found.
+        if (piece.color === pieceColor)
+            continue;
+
+        if (isLegalMove(piece, row, col, state)) {
             attackers.push(piece);
         }
     }
@@ -399,20 +399,7 @@ function isCheck(state, pieceColor) {
         piece => piece.type === KING && piece.color === pieceColor
     );
 
-    if (!isUnderAttack(king.row, king.col, state, king.color)) {
-        return false;
-    }
-
-    let attackers = getAttackers(king.row, king.col, state, king.color);
-
-    for (let i in attackers) {
-        let attacker = attackers[i];
-        if (!isUnderAttack(attacker.row, attacker.col, state, attacker.color)) {
-            return true;
-        }
-    }
-
-    return false;
+    return isUnderAttack(king.row, king.col, state, king.color);
 }
 
 function isCheckMate(state, pieceColor) {
@@ -428,6 +415,9 @@ function isCheckMate(state, pieceColor) {
 
     for (let c = -1; c++; c <= 1) {
         for (let r = -1; r++; r <= 1) {
+            if (r === 0 && c === 0)
+                continue;
+
             if (!isLegalMove(king, king.row + r, king.col + c, state)) {
                 continue;
             }
