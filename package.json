@@ -1,0 +1,19 @@
+{
+  "name": "jess",
+  "version": "1.0.0",
+  "description": "",
+  "main": "backend/index.js",
+  "scripts": {
+    "install": "npm run install-frontend && npm run install-backend",
+    "build-frontend": "cd frontend && npm run build",
+    "install-frontend": "cd frontend && npm install && npm run build && cd ..",
+    "install-backend": "cd backend && npm install && cd ..",
+    "start": "cd backend && node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "aws-eb:prod": "npm run build && npm run start:prod",
+    "clean": "rm -r ./frontend/node_modules/* && rm -r ./backend/node_modules/* && rm -r ./frontend/dist/*"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {}
+}
