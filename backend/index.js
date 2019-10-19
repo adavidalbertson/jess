@@ -14,9 +14,11 @@ ioActionHandler(io)
     .plugins(include('./handlers/GameState.js').log(console.log))
     // .onDisconnect(socketHandler.handleDisconnect);
 
-app.use(express.static(path.join(__dirname, '../frontend/dist/')));
+const frontendDist = path.join(__dirname, '../frontend/dist/');
 
-app.get('/', (req, res) => res.send('You got a response!'));
+app.use(express.static(frontendDist));
+
+app.get('/*', (req, res) => {res.sendFile(path.join(frontendDist, 'index.html'))});
 
 const PORT = process.env.HTTP_PORT || 4040;
 
