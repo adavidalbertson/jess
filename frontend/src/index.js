@@ -20,8 +20,9 @@ const reducer = combineReducers({
     Message
 });
 
-const backendURL =
-    process.env.NODE_ENV === "development" ? "ws://localhost:4040/app1" : "/app1";
+const PORT = process.env.HTTP_PORT || 8081;
+const BACKEND_URL =
+    process.env.NODE_ENV === "development" ? "ws://localhost:" + PORT + "/app1" : "/app1";
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -30,7 +31,7 @@ const store = createStore(
     composeEnhancers(
         applyMiddleware(
             myRouterMiddleware(history),
-            ReactActionSocketMiddleware(backendURL)
+            ReactActionSocketMiddleware(BACKEND_URL)
         )
     )
 );

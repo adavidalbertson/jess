@@ -20,8 +20,8 @@ app.use(express.static(frontendDist));
 
 app.get('/*', (req, res) => {res.sendFile(path.join(frontendDist, 'index.html'))});
 
-const PORT = process.env.HTTP_PORT || 4040;
+const PORT = process.env.HTTP_PORT || 8081;
 
-http.listen(4040, function () {
+http.listen(PORT, function () {
     console.log(`listening on *:${PORT}`);
 });
