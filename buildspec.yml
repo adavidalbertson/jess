@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+  build:
+    commands:
+      - echo "Installing node modules..."
+      - npm install
+      - echo "Bundling frontend..."
+      - npm run build-frontend
+      - echo "Removing dev dependencies..."
+      - npm prune --production
+
+artifacts:
+  files:
+    - backend/**/*
+    - common/*
+    - frontend/dist/**/*
+    - node_modules/**/*
+    - package.json
