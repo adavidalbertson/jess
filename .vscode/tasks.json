@@ -4,16 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Launch Frontend",
-            "identifier": "start_webpack_dev_server",
-            // "suppressTaskName": true,
+            "label": "start-dev-server",
             "type": "npm",
-            "script": "start",
-            "path": "frontend/",
-            "options": {
-                "cwd": "${workspaceFolder}/frontend"
-            },
-            "problemMatcher": []
+            "script": "local-frontend"
         }
     ]
 }
