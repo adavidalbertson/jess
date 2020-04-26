@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getPieceResource } from '../../../common/Utils.js';
+import { getPieceResource } from '../../../common/ChessRules.js';
 
 export default class BoardPiece extends React.Component {
     render() {

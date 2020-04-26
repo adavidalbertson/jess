@@ -81,6 +81,7 @@ function isLegalMove(piece, endRow, endCol, state) {
             )
                 return false;
             break;
+
         case QUEEN:
             if (
                 !vertHoriz(piece.row, piece.col, endRow, endCol) &&
@@ -88,15 +89,19 @@ function isLegalMove(piece, endRow, endCol, state) {
             )
                 return false;
             break;
+
         case BISHOP:
             if (!diagonal(piece.row, piece.col, endRow, endCol)) return false;
             break;
+
         case KNIGHT:
             if (!knightMove(piece.row, piece.col, endRow, endCol)) return false;
             break;
+
         case ROOK:
             if (!vertHoriz(piece.row, piece.col, endRow, endCol)) return false;
             break;
+
         case PAWN:
             if (piece.row === endRow) {
                 // console.log('pawn cannot stay in same row');
@@ -147,6 +152,7 @@ function isLegalMove(piece, endRow, endCol, state) {
                 return false;
             }
             break;
+
         default:
             return false;
     }
@@ -360,6 +366,7 @@ function isUnderAttack(row, col, state, pieceColor, includeKing = true) {
             !p.captured &&
             (includeKing || p.type !== pieceTypes.KING)
     );
+
     for (let piece of opposingPieces) {
         if (isLegalMove(piece, row, col, state)) {
             return true;
@@ -381,12 +388,9 @@ function getAttackers(row, col, state, pieceColor) {
     for (let piece of pieces) {
         // For some reason filtering these out beforehand causes attackers to
         // not always be found.
-        if (piece.color === pieceColor)
-            continue;
+        if (piece.color === pieceColor) continue;
 
-        if (isLegalMove(piece, row, col, state)) {
-            attackers.push(piece);
-        }
+        if (isLegalMove(piece, row, col, state)) attackers.push(piece);
     }
 
     return attackers;
@@ -395,6 +399,7 @@ function getAttackers(row, col, state, pieceColor) {
 function isCheck(state, pieceColor) {
     const { pieces } = state;
     const { KING } = pieceTypes;
+
     let king = pieces.find(
         piece => piece.type === KING && piece.color === pieceColor
     );
@@ -404,11 +409,13 @@ function isCheck(state, pieceColor) {
 
 function isCheckMate(state, pieceColor) {
     const { pieces } = state;
+
     if (!isCheck(state, pieceColor)) {
         return false;
     }
 
     const KING = pieceTypes.KING;
+    
     let king = pieces.find(
         piece => piece.type === KING && piece.color === pieceColor
     );

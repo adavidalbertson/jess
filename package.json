@@ -6,12 +6,8 @@
   "scripts": {
     "build-frontend": "webpack --config ./frontend/webpack.prod.js",
     "local-frontend": "webpack-dev-server --config ./frontend/webpack.dev.js --inline --hot",
-    "install-frontend": "cd frontend && npm install && npm run build && cd ..",
-    "install-backend": "cd backend && npm install && cd ..",
     "start": "cd backend && node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "aws-eb:prod": "npm run build && npm run start:prod",
-    "clean": "rm -rf node_modules && rm -rf ./frontend/node_modules && rm -rf ./backend/node_modules"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",

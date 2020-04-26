@@ -12,10 +12,12 @@ const handleSocketActions = function (action, socketEnv, next) {
             gameID = uuidv1();
             socketToGame[socketEnv.socket.id] = gameID;
             break;
+
         case actions.JOIN_GAME:
             gameID = action.payload.gameID;
             socketToGame[socketEnv.socket.id] = gameID;
             break;
+            
         default:
             gameID = socketToGame[socketEnv.socket.id];
     }

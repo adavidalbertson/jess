@@ -12,7 +12,7 @@ import {
     setupNewBoard,
     getNextState,
     isLegalMove
-} from "../../../common/Utils.js";
+} from "../../../common/ChessRules.js";
 
 class Game extends React.Component {
     componentWillMount() {

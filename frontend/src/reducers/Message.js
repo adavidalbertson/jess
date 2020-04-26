@@ -27,16 +27,19 @@ export default function Messages(state = {}, action = {}) {
             newState.type = SUCCESS;
             newState.playerColor = action.payload.playerColor;
             return newState;
+
         case JOINED_GAME:
             newState.message = "Joined game.";
             newState.type = SUCCESS;
             newState.playerColor = action.payload.playerColor;
             return newState;
+
         case RESTART_GAME:
             newState.message = "Started new game.";
             newState.type = SUCCESS;
             newState.playerColor = (state.playerColor + action.payload.swap) % 2;
             return newState;
+
         case OPPONENT_JOINED:
             if (action.payload.playerColor != state.playerColor) {
                 newState.message = "Opponent joined.";
@@ -47,18 +50,22 @@ export default function Messages(state = {}, action = {}) {
                 newState.type = SUCCESS;
                 return newState;
             }
+
         case OPPONENT_LEFT:
             newState.message = "Opponent disconnected.";
             newState.type = FAIL;
             return newState;
+
         case GAME_DOES_NOT_EXIST:
             newState.message = "Game does not exist.";
             newState.type = FAIL;
             return newState;
+
         case GAME_IS_FULL:
             newState.message = "Game is full.";
             newState.type = FAIL;
             return newState;
+
         case GAME_OVER:
             if (action.payload.winner < 0 || action.payload.winner > 1) {
                 newState.message = action.payload.reason
@@ -77,12 +84,14 @@ export default function Messages(state = {}, action = {}) {
                 newState.type = FAIL;
             }
             return newState;
+
         case MOVE_REJECTED:
             newState.message = action.payload.reason
                 ? "Move rejected: " + action.payload.reason
                 : "Move rejected."
                 newState.type = FAIL;
                 return newState;
+                
         default:
             return state;
     }

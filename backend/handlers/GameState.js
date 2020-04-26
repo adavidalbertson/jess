@@ -1,4 +1,4 @@
-const utils = require("../../common/Utils.js");
+const rules = require("../../common/ChessRules.js");
 const actions = require("../../common/Actions.js");
 
 let gameID;
@@ -23,7 +23,7 @@ const handleMessageActions = function(action, socketEnv, next) {
                 socketID: socket.id
             };
 
-            gameState = utils.setupNewBoard();
+            gameState = rules.setupNewBoard();
 
             game = {
                 id: gameID,
@@ -137,7 +137,7 @@ const handleMessageActions = function(action, socketEnv, next) {
             let legal = false;
 
             try {
-                legal = utils.isLegalMove(
+                legal = rules.isLegalMove(
                     move.piece,
                     move.endRow,
                     move.endCol,
@@ -165,7 +165,7 @@ const handleMessageActions = function(action, socketEnv, next) {
                 break;
             }
 
-            let nextState = utils.getNextState(
+            let nextState = rules.getNextState(
                 move.piece,
                 move.endRow,
                 move.endCol,
@@ -174,7 +174,7 @@ const handleMessageActions = function(action, socketEnv, next) {
 
             game.gameState = nextState;
 
-            if (utils.isCheckMate(nextState, nextState.turn)) {
+            if (rules.isCheckMate(nextState, nextState.turn)) {
                 game.gameState.winner = gameState.turn;
 
                 broadcast({
@@ -230,12 +230,12 @@ const handleMessageActions = function(action, socketEnv, next) {
                 swap = true;
             }
 
-            game.gameState = utils.setupNewBoard();
+            game.gameState = rules.setupNewBoard();
 
             broadcast({
                 type: actions.RESTART_GAME,
                 payload: {
-                    gameState: utils.setupNewBoard(),
+                    gameState: rules.setupNewBoard(),
                     swap
                 }
             });
