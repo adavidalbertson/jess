@@ -75,11 +75,32 @@ function isLegalMove(piece, endRow, endCol, state) {
 
     switch (piece.type) {
         case KING:
-            if (
+            if (piece.row === endRow && Math.abs(piece.col - endCol) === 2) {
+                if (piece.hasMoved)
+                    return false;
+
+                let direction = piece.col - endCol;
+                if (!pieces.some(
+                    p => p.color === piece.color
+                    && p.type === ROOK
+                    && !p.hasMoved
+                    && (piece.col - p.col) * direction > 0
+                )) {
+                    return false;
+                }
+
+                let throughSquares = intermediateSquares(piece.row, piece.col, endRow, endCol);
+                if (throughSquares.some(sq => isUnderAttack(sq.row, sq.col, state, piece.color))) {
+                    return false;
+                }
+
+            } else if (
                 Math.abs(piece.row - endRow) > 1 ||
                 Math.abs(piece.col - endCol) > 1
-            )
+            ) {
                 return false;
+            }
+            
             break;
 
         case QUEEN:
@@ -306,7 +327,7 @@ function getNextState(piece, endRow, endCol, state) {
     // let newState = Object.assign({}, state);
     let newState = JSON.parse(JSON.stringify(state)); //deep copy
 
-    const { QUEEN, PAWN } = pieceTypes;
+    const { QUEEN, PAWN, KING, ROOK } = pieceTypes;
     const startRow = piece.row;
     const startCol = piece.col;
     let capturedPieceID = newState.positions[endRow][endCol];
@@ -333,6 +354,21 @@ function getNextState(piece, endRow, endCol, state) {
         ) {
             capturedPieceID = newState.enPassant.pieceID;
         }
+    }
+
+    if (piece.type === KING && piece.row === endRow && Math.abs(piece.col - endCol) === 2) {
+        let direction = (piece.col - endCol) / 2;
+        let rook = state.pieces.find(
+            p => p.color === piece.color
+            && p.type === ROOK
+            && !p.hasMoved
+            && (piece.col - p.col) * direction > 0
+        );
+
+        newState.pieces[rook.id].col = piece.col - direction;
+        newState.pieces[rook.id].hasMoved = true;
+        newState.positions[rook.row][rook.col] = null;
+        newState.positions[rook.row][piece.col - direction] = rook.id;
     }
 
     if (capturedPieceID) {
@@ -465,6 +501,10 @@ function isCheckMate(state, pieceColor) {
     }
 
     return false;
+}
+
+function isLegalCastle() {
+
 }
 
 module.exports = {
