@@ -1,6 +1,5 @@
 const merge = require("webpack-merge");
 const path = require("path");
-// const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
@@ -15,7 +14,6 @@ module.exports = merge(common, {
         path: BUILD_DIR
     },
     plugins: [
-        // new UglifyJSPlugin()
         new MiniCssExtractPlugin({
             filename: "styles/[name].css"
         }),
