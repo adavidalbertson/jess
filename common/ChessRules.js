@@ -1,37 +1,64 @@
-const { boardDim, pieceTypes } = require("./Constants.js");
+const { boardDim, pieceTypes, pieceColors, BASE_PIECES } = require("./Constants.js");
+
+const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
+const { BLACK, WHITE } = pieceColors;
 
 function setupNewBoard() {
-    const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
-
     let pieces = [];
     let positions = [[], [], [], [], [], [], [], []];
     let captured = [];
 
-    const backRows = [ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK];
-    let curID = 0;
+    let board = {
+        gameState: {
+            pieces,
+            positions,
+            captured,
+            turn: 0,
+            enPassant: null,
+            moves: 0,
+            gameOver: false
+        },
+        withPieces: function(...pieces) {
+            for (const piece of pieces) {
+                let oldPiece = this.gameState.pieces[piece.id];
+                if (oldPiece != null) {
+                    this.gameState.positions[oldPiece.row][oldPiece.col] = null;
+                }
 
-    for (let i = 0; i < boardDim; i++) {
-        pieces[curID] = newPiece(curID, 1, backRows[i], 0, i);
-        positions[0][i] = curID;
-        pieces[curID + 8] = newPiece(curID + 8, 1, PAWN, 1, i);
-        positions[1][i] = curID + 8;
-        pieces[curID + 16] = newPiece(curID + 16, 0, PAWN, 6, i);
-        positions[6][i] = curID + 16;
-        pieces[curID + 24] = newPiece(curID + 24, 0, backRows[i], 7, i);
-        positions[7][i] = curID + 24;
+                this.gameState.pieces[piece.id] = piece;
+                this.gameState.positions[piece.row][piece.col] = piece.id;
+            }
 
-        curID++;
-    }
-
-    return {
-        pieces,
-        positions,
-        captured,
-        turn: 0,
-        enPassant: null,
-        moves: 0,
-        gameOver: false
+            return this;
+        },
+        withStartingPieces: function(...basePieces) {
+            return this.withPieces(...basePieces.map(bp => newPieceFromBase(bp)));
+        }
     };
+
+    return board.withStartingPieces(...Object.values(BASE_PIECES)).gameState;
+}
+
+function printBoard(state) {
+    let str = " ------------------------ \n";
+    for (j = 0; j < 8; j++) {
+        let row = state.positions[j];
+        str += "|";
+        for (i = 0; i < 8; i++) {
+            const pid = row[i];
+            const shade = (i + j) % 2 == 1 ? "▒" : " ";
+            if (pid == null)
+                str += shade + shade + shade;
+            else {
+                let piece = state.pieces[pid]
+                str += shade + getPieceResource(piece.color, piece.type) + shade;
+            }
+        }
+        str += "|\n"
+    }
+    str += " ------------------------ ";
+    console.log(str);
+    return str;
 }
 
 function newPiece(id, color, type, row, col) {
@@ -46,59 +73,91 @@ function newPiece(id, color, type, row, col) {
     };
 }
 
+function newPieceFromBase(basePiece) {
+    return {
+        id: basePiece.id,
+        color: basePiece.color,
+        type: basePiece.type,
+        hasMoved: false,
+        captured: false,
+        row: basePiece.startingRow,
+        col: basePiece.startingCol
+    }
+}
+
 function getPieceResource(color, type) {
     const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
 
     switch (type) {
         case KING:
-            return color ? "♚" : "♔";
+            return color === BLACK ? "♚" : "♔";
         case QUEEN:
-            return color ? "♛" : "♕";
+            return color === BLACK ? "♛" : "♕";
         case BISHOP:
-            return color ? "♝" : "♗";
+            return color === BLACK ? "♝" : "♗";
         case KNIGHT:
-            return color ? "♞" : "♘";
+            return color === BLACK ? "♞" : "♘";
         case ROOK:
-            return color ? "♜" : "♖";
+            return color === BLACK ? "♜" : "♖";
         case PAWN:
-            return color ? "♟" : "♙";
+            return color === BLACK ? "♟" : "♙";
     }
 }
 
-function isLegalMove(piece, endRow, endCol, state) {
+function illegal(reason) {
+    return {result: false, reason};
+}
+
+function isLegalMove(piece, endRow, endCol, state, turn = state.turn) {
     const { KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN } = pieceTypes;
     const { positions, pieces, enPassant } = state;
 
-    if (piece.captured) return false;
+    if (piece.color != turn) {
+        return illegal("It's not your turn");
+    }
 
-    if (piece.row === endRow && piece.col === endCol) return false;
+    if (piece.captured) {
+        return illegal("That piece is captured");
+    }
+
+    if (piece.row === endRow && piece.col === endCol) {
+        return illegal("The piece didn't move");
+    }
 
     switch (piece.type) {
         case KING:
             if (piece.row === endRow && Math.abs(piece.col - endCol) === 2) {
                 if (piece.hasMoved)
-                    return false;
+                    return illegal("Cannot castle if the king has moved");
+
+                if (isCheck(state, piece.color))
+                    return illegal("Cannot castle while in check");
 
                 let direction = piece.col - endCol;
-                if (!pieces.some(
-                    p => p.color === piece.color
-                    && p.type === ROOK
-                    && !p.hasMoved
-                    && (piece.col - p.col) * direction > 0
-                )) {
-                    return false;
+
+                let rook = pieces.find(p => 
+                        p != null &&
+                        p.color === piece.color &&
+                        p.type === ROOK &&
+                        (piece.col - p.col) * direction > 0);
+
+                if (rook.hasMoved)
+                    return illegal("Cannot castle with a rook that has moved");
+
+                if (blocked(piece.row, piece.col, rook.row, rook.col, positions)) {
+                    return illegal("Cannot castle if there are pieces between the king and the rook");
                 }
 
                 let throughSquares = intermediateSquares(piece.row, piece.col, endRow, endCol);
                 if (throughSquares.some(sq => isUnderAttack(sq.row, sq.col, state, piece.color))) {
-                    return false;
+                    return illegal("The king cannot castle through any squares that are under attack");
                 }
 
             } else if (
                 Math.abs(piece.row - endRow) > 1 ||
                 Math.abs(piece.col - endCol) > 1
             ) {
-                return false;
+                return illegal("The king cannot move more than one square at a time");
             }
             
             break;
@@ -108,84 +167,87 @@ function isLegalMove(piece, endRow, endCol, state) {
                 !vertHoriz(piece.row, piece.col, endRow, endCol) &&
                 !diagonal(piece.row, piece.col, endRow, endCol)
             )
-                return false;
+                return illegal("The queen can only move vertically, horizontally, or diagonally");
             break;
 
         case BISHOP:
-            if (!diagonal(piece.row, piece.col, endRow, endCol)) return false;
+            if (!diagonal(piece.row, piece.col, endRow, endCol)) {
+                return illegal("Bishops can only move diagonally");
+            }
             break;
 
         case KNIGHT:
-            if (!knightMove(piece.row, piece.col, endRow, endCol)) return false;
+            if (!knightMove(piece.row, piece.col, endRow, endCol)) {
+                return illegal("Knights can only move knightwise");
+            }
             break;
 
         case ROOK:
-            if (!vertHoriz(piece.row, piece.col, endRow, endCol)) return false;
+            if (!vertHoriz(piece.row, piece.col, endRow, endCol)) {
+                return illegal("Rooks can only move vertically or horizontally");
+            }
             break;
 
         case PAWN:
             if (piece.row === endRow) {
-                // console.log('pawn cannot stay in same row');
-                return false;
+                return illegal("Pawns cannot move horizontally");
             }
 
             if (Math.abs(piece.row - endRow) > 2) {
-                // console.log('pawn cannot move more than two rows');
-                return false;
+                return illegal("Pawns cannot move further than two rows");
             }
 
             if (
                 (piece.hasMoved || piece.col !== endCol) &&
                 Math.abs(piece.row - endRow) > 1
             ) {
-                // console.log('pawn cannot move multiple rows if it has moved or is capturing');
-                return false;
+                return illegal("Pawns cannot move more than one row if it has moved or is capturing");
+            }
+
+            if ((piece.color === BLACK && piece.row > endRow) || (piece.color == WHITE && piece.row < endRow)) {
+                return illegal("Pawns can only move forward");
             }
 
             if (piece.col === endCol) {
-                if (positions[endRow][endCol]) return false;
-
-                if (piece.color && piece.row - endRow > 0) {
-                    // console.log('black pawns can only move to higher rows');
-                    return false;
-                }
-
-                if (!piece.color && piece.row - endRow < 0) {
-                    // console.log('white pawns can only move to lower rows');
-                    return false;
+                if (positions[endRow][endCol]) {
+                    return illegal("Pawns cannot capture vertically");
                 }
             } else if (Math.abs(piece.col - endCol) === 1) {
-                // console.log("En passant: ", enPassant);
                 if (
                     !pieces[positions[endRow][endCol]] &&
                     (enPassant == null ||
-                        (enPassant != null &&
-                            (enPassant.row !== endRow ||
+                        (
+                            enPassant != null &&
+                            (
+                                enPassant.row !== endRow ||
                                 enPassant.col !== endCol ||
-                                pieces[enPassant.pieceID].color ===
-                                    piece.color)))
+                                pieces[enPassant.pieceID].color === piece.color
+                            )
+                        )
+                    )
                 ) {
-                    // console.log('pawns can only move diagonally when capturing')
-                    return false;
+                    return illegal("Pawns can only move diagonally when capturing");
                 }
             } else {
-                // console.log('pawns cannot move more than one column');
-                return false;
+                return illegal("Pawns cannot move more than one column");
             }
             break;
 
         default:
-            return false;
+            return illegal("I don't know, man. What did you do? That's not even a real piece!");
     }
 
     if (
         piece.type !== KNIGHT &&
         blocked(piece.row, piece.col, endRow, endCol, positions)
-    )
-        return false;
+    ) {
+        return illegal("That move is blocked by another piece");
+    }
 
     const captureTarget = pieces[positions[endRow][endCol]];
-    if (captureTarget && piece.color === captureTarget.color) return false;
+    if (captureTarget && piece.color === captureTarget.color) {
+        return illegal("Cannot capture a piece of the same color");
+    }
 
     const nextState = getNextState(piece, endRow, endCol, {
         pieces,
@@ -194,9 +256,9 @@ function isLegalMove(piece, endRow, endCol, state) {
     });
 
     if(isCheck(nextState, piece.color))
-        return false;
+        return illegal("Cannot move into check");
 
-    return true;
+    return {result: true, reason: "That move is legal"};
 }
 
 function vertHoriz(startRow, startCol, endRow, endCol) {
@@ -263,68 +325,7 @@ function blocked(startRow, startCol, endRow, endCol, positions) {
     return false;
 }
 
-function getStateDiff(piece, endRow, endCol, state) {
-    let diff = {};
-
-    if (!isLegalMove(piece, endRow, endCol, state)) {
-        return diff;
-    }
-
-    const startRow = piece.row;
-    const startCol = piece.col;
-
-    diff.pieces = [];
-    diff.pieces[piece.id] = piece;
-
-    diff.positions = [];
-
-    const { QUEEN, PAWN } = pieceTypes;
-    let capturedPieceID = state.positions[endRow][endCol];
-
-    if (piece.type === PAWN) {
-        if (endRow === 0 || endRow === boardDim - 1) {
-            piece.type = QUEEN;
-        }
-
-        if (!piece.hasMoved && Math.abs(startRow - endRow) === 2) {
-            diff.enPassant = {
-                row: (startRow + endRow) / 2,
-                col: endCol,
-                pieceID: piece.id
-            };
-        }
-
-        if (
-            state.enPassant &&
-            endRow === state.enPassant.row &&
-            endCol === state.enPassant.col
-        ) {
-            capturedPieceID = state.enPassant.pieceID;
-        }
-    }
-
-    if (capturedPieceID) {
-        let capturedPiece = newState.pieces[capturedPieceID];
-        capturedPiece.captured = true;
-        diff.positions[capturedPiece.row] = [];
-        diff.positions[capturedPiece.row][capturedPiece.col] = null;
-        diff.captured = [capturedPieceID];
-    }
-
-    piece.row = endRow;
-    piece.col = endCol;
-    piece.hasMoved = true;
-
-    diff.positions[startRow] = [];
-    diff.positions[startRow][startCol] = null;
-    diff.positions[endRow] = [];
-    diff.positions[endRow][endCol] = piece.id;
-
-    return diff;
-}
-
 function getNextState(piece, endRow, endCol, state) {
-    // let newState = Object.assign({}, state);
     let newState = JSON.parse(JSON.stringify(state)); //deep copy
 
     const { QUEEN, PAWN, KING, ROOK } = pieceTypes;
@@ -359,7 +360,8 @@ function getNextState(piece, endRow, endCol, state) {
     if (piece.type === KING && piece.row === endRow && Math.abs(piece.col - endCol) === 2) {
         let direction = (piece.col - endCol) / 2;
         let rook = state.pieces.find(
-            p => p.color === piece.color
+            p => p != null
+            && p.color === piece.color
             && p.type === ROOK
             && !p.hasMoved
             && (piece.col - p.col) * direction > 0
@@ -398,13 +400,14 @@ function isUnderAttack(row, col, state, pieceColor, includeKing = true) {
 
     let opposingPieces = pieces.filter(
         p =>
+            p != null &&
             p.color !== pieceColor &&
             !p.captured &&
             (includeKing || p.type !== pieceTypes.KING)
     );
 
     for (let piece of opposingPieces) {
-        if (isLegalMove(piece, row, col, state)) {
+        if (isLegalMove(piece, row, col, state, piece.color).result) {
             return true;
         }
     }
@@ -424,9 +427,9 @@ function getAttackers(row, col, state, pieceColor) {
     for (let piece of pieces) {
         // For some reason filtering these out beforehand causes attackers to
         // not always be found.
-        if (piece.color === pieceColor) continue;
+        if (piece == null || piece.color === pieceColor) continue;
 
-        if (isLegalMove(piece, row, col, state)) attackers.push(piece);
+        if (isLegalMove(piece, row, col, state, piece.color).result) attackers.push(piece);
     }
 
     return attackers;
@@ -437,7 +440,7 @@ function isCheck(state, pieceColor) {
     const { KING } = pieceTypes;
 
     let king = pieces.find(
-        piece => piece.type === KING && piece.color === pieceColor
+        piece => piece != null && piece.type === KING && piece.color === pieceColor
     );
 
     return isUnderAttack(king.row, king.col, state, king.color);
@@ -453,7 +456,7 @@ function isCheckMate(state, pieceColor) {
     const KING = pieceTypes.KING;
     
     let king = pieces.find(
-        piece => piece.type === KING && piece.color === pieceColor
+        piece => piece != null && piece.type === KING && piece.color === pieceColor
     );
 
     for (let c = -1; c++; c <= 1) {
@@ -461,7 +464,7 @@ function isCheckMate(state, pieceColor) {
             if (r === 0 && c === 0)
                 continue;
 
-            if (!isLegalMove(king, king.row + r, king.col + c, state)) {
+            if (!isLegalMove(king, king.row + r, king.col + c, state, king.color).result) {
                 continue;
             }
 
@@ -503,17 +506,15 @@ function isCheckMate(state, pieceColor) {
     return false;
 }
 
-function isLegalCastle() {
-
-}
-
 module.exports = {
     setupNewBoard,
     getPieceResource,
+    newPiece,
+    newPieceFromBase,
     isLegalMove,
     isUnderAttack,
     isCheck,
     isCheckMate,
-    getStateDiff,
-    getNextState
+    getNextState,
+    printBoard
 };

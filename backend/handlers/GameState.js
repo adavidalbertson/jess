@@ -154,11 +154,11 @@ const handleMessageActions = function(action, socketEnv, next) {
                 break;
             }
 
-            if (!legal) {
+            if (!legal.result) {
                 dispatch({
                     type: actions.MOVE_REJECTED,
                     payload: {
-                        reason: "Illegal move."
+                        reason: legal.reason
                     }
                 });
 
