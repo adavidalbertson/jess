@@ -155,6 +155,8 @@ test("Checkmate", () => {
         .withPieceAt(BLACK_ROOK_1, 3, 4)
         .onTurn(BLACK);
 
+    printBoard(game.gameState);
+
     expect(isCheckMate(game.gameState, WHITE)).toBe(true);
 });
 
@@ -179,7 +181,7 @@ test("Fool's Mate", () => {
     expect(isCheckMate(game.gameState, WHITE)).toBe(true);
 });
 
-test("legal castle kingside", () => {
+test("Legal castle kingside", () => {
     let before = setupNewTestBoard()
         .withStartingPieces(WHITE_ROOK_2);
 
@@ -190,4 +192,80 @@ test("legal castle kingside", () => {
     let after = before.movePiece(WHITE_KING, 7, 6);
 
     expect(equivalent(expected, after)).toBe(true);
+});
+
+test("Legal castle queenside", () => {
+    let before = setupNewTestBoard()
+        .withStartingPieces(WHITE_ROOK_1);
+
+    let expected = setupNewTestBoard()
+        .withPieceAt(WHITE_KING, 7, 2)
+        .withPieceAt(WHITE_ROOK_1, 7, 3);
+
+    let after = before.movePiece(WHITE_KING, 7, 2);
+
+    expect(equivalent(expected, after)).toBe(true);
+});
+
+test("Can't castle if rook has moved", () => {
+    let game = setupNewTestBoard()
+        .withPieceAt(WHITE_ROOK_1, 7, 0);
+
+    let legal = isLegalMove(game.getPiece(WHITE_KING), 7, 2, game.gameState);
+
+    expect(legal.result).toBe(false);
+    expect(legal.reason).toBe("Cannot castle with a rook that has moved");
+});
+
+test("Can't castle if king has moved", () => {
+    let game = setupNewTestBoard()
+        .withStartingPieces(WHITE_ROOK_1)
+        .withPieceAt(WHITE_KING, 7, 4);
+
+    let legal = isLegalMove(game.getPiece(WHITE_KING), 7, 2, game.gameState);
+
+    expect(legal.result).toBe(false);
+    expect(legal.reason).toBe("Cannot castle if the king has moved");
+});
+
+test("Can't castle through pieces", () => {
+    let game = setupNewTestBoard()
+        .withStartingPieces(WHITE_ROOK_1, WHITE_QUEEN);
+
+    let legal = isLegalMove(game.getPiece(WHITE_KING), 7, 2, game.gameState);
+
+    expect(legal.result).toBe(false);
+    expect(legal.reason).toBe("Cannot castle if there are pieces between the king and the rook");
+});
+
+test("Can't castle through a square that is under attack", () => {
+    let game = setupNewTestBoard()
+        .withStartingPieces(WHITE_ROOK_1, BLACK_QUEEN);
+
+    let legal = isLegalMove(game.getPiece(WHITE_KING), 7, 2, game.gameState);
+
+    expect(legal.result).toBe(false);
+    expect(legal.reason).toBe("The king cannot castle through any squares that are under attack");
+});
+
+test("Can't castle when in check", () => {
+    let game = setupNewTestBoard()
+        .withStartingPieces(WHITE_ROOK_1)
+        .withPieceAt(BLACK_QUEEN, 1, 4);
+
+    let legal = isLegalMove(game.getPiece(WHITE_KING), 7, 2, game.gameState);
+
+    expect(legal.result).toBe(false);
+    expect(legal.reason).toBe("Cannot castle while in check");
+});
+
+test("Can't castle into check", () => {
+    let game = setupNewTestBoard()
+        .withStartingPieces(WHITE_ROOK_1)
+        .withPieceAt(BLACK_QUEEN, 1, 2);
+
+    let legal = isLegalMove(game.getPiece(WHITE_KING), 7, 2, game.gameState);
+
+    expect(legal.result).toBe(false);
+    expect(legal.reason).toBe("Cannot move into check");
 });
