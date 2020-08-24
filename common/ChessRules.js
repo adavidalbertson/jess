@@ -442,20 +442,17 @@ function setupEmptyBoard() {
             }
 
             for (let r = 0; r < 8; r++) {
-                if (a.positions[r].length === 0 || b.positions[r].lenght === 0) {
-                    continue;
-                }
-
                 for (let c = 0; c < 8; c++) {
                     let aPieceId = a.positions[r][c];
                     let bPieceId = b.positions[r][c];
         
-                    if (aPieceId != null && bPieceId != null) {
+                    if (aPieceId != null && bPieceId != null && aPieceId === bPieceId) {
                         let aPiece = a.pieces[aPieceId];
                         let bPiece = b.pieces[bPieceId];
         
-                        return aPiece.pieceType === bPiece.pieceType
-                            && aPiece.pieceColor === bPiece.pieceColor;
+                        if (aPiece.pieceType !== bPiece.pieceType || aPiece.pieceColor !== bPiece.pieceColor) {
+                            return false;
+                        }
                     } else if (aPieceId == null && bPieceId == null) {
                         continue;
                     } else {

@@ -60,8 +60,6 @@ test("Checkmate", () => {
         .withPieceAt(BLACK_ROOK_1, 3, 4)
         .onTurn(BLACK);
 
-    game.print();
-
     expect(game.isCheckMate(WHITE)).toBe(true);
 });
 
@@ -70,8 +68,6 @@ test("Fool's Mate static", () => {
         .withStartingPieces(WHITE_QUEEN, WHITE_BISHOP_2, WHITE_PAWN_3, WHITE_PAWN_4)
         .withPieceAt(BLACK_QUEEN, 4, 7)
         .onTurn(BLACK);
-
-    game.print();
 
     expect(game.isCheckMate(WHITE)).toBe(true);
 });
