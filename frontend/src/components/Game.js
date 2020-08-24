@@ -9,8 +9,6 @@ import { pendingMove, moveApproved } from "../reducers/GameState.js";
 import { submitMove } from "../reducers/Socket.js";
 
 import {
-    setupNewBoard,
-    getNextState,
     isLegalMove
 } from "../../../common/ChessRules.js";
 
@@ -24,7 +22,7 @@ class Game extends React.Component {
     }
 
     handleMovePiece(piece, endRow, endCol) {
-        if (!isLegalMove(piece, endRow, endCol, this.state)) {
+        if (!isLegalMove(this.state, piece, endRow, endCol)) {
             return;
         }
 
@@ -43,7 +41,6 @@ class Game extends React.Component {
                 <Board
                     pieces={this.state.pieces}
                     positions={this.state.positions}
-                    // turn={this.state.turn}
                     playerColor={this.props.gameState.playerColor}
                     movePiece={this.handleMovePiece.bind(this)}
                 />

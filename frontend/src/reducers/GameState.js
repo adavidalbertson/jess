@@ -26,31 +26,31 @@ export default function GameState(state = setupNewBoard(), action = {}) {
             //fall through
 
         case MOVE_APPROVED:
-            newState.pieces = action.payload.gameState.pieces;
-            newState.positions = action.payload.gameState.positions;
-            newState.enPassant = action.payload.gameState.enPassant;
-            newState.captured = action.payload.gameState.captured;
-            newState.turn = action.payload.gameState.turn;
+            newState.pieces = action.payload.board.pieces;
+            newState.positions = action.payload.board.positions;
+            newState.enPassant = action.payload.board.enPassant;
+            newState.captured = action.payload.board.captured;
+            newState.turn = action.payload.board.turn;
             newState.pendingMove = false;
             return newState;
 
         case GAME_OVER:
-            newState.pieces = action.payload.gameState.pieces;
-            newState.positions = action.payload.gameState.positions;
-            newState.enPassant = action.payload.gameState.enPassant;
-            newState.captured = action.payload.gameState.captured;
-            newState.turn = action.payload.gameState.turn;
+            newState.pieces = action.payload.board.pieces;
+            newState.positions = action.payload.board.positions;
+            newState.enPassant = action.payload.board.enPassant;
+            newState.captured = action.payload.board.captured;
+            newState.turn = action.payload.board.turn;
             newState.pendingMove = true;
             newState.gameOver = true;
             newState.won = action.payload.winner === state.playerColor;
             return newState;
 
         case RESTART_GAME:
-            newState.pieces = action.payload.gameState.pieces;
-            newState.positions = action.payload.gameState.positions;
-            newState.enPassant = action.payload.gameState.enPassant;
-            newState.captured = action.payload.gameState.captured;
-            newState.turn = action.payload.gameState.turn;
+            newState.pieces = action.payload.board.pieces;
+            newState.positions = action.payload.board.positions;
+            newState.enPassant = action.payload.board.enPassant;
+            newState.captured = action.payload.board.captured;
+            newState.turn = action.payload.board.turn;
             newState.pendingMove = false;
             newState.gameOver = false;
             newState.won = false;

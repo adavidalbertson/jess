@@ -1,12 +1,12 @@
-const rules = require("../../common/ChessRules.js");
 const actions = require("../../common/Actions.js");
+const { setupNewBoard } = require("../../common/ChessRules.js");
 
 let gameID;
 let game;
 
 const handleMessageActions = function(action, socketEnv, next) {
     let { dispatch, broadcast, socket, games, socketToGame } = socketEnv;
-    let gamestate;
+    let gameState;
 
     switch (action.type) {
         case actions.NEW_GAME:
@@ -23,7 +23,7 @@ const handleMessageActions = function(action, socketEnv, next) {
                 socketID: socket.id
             };
 
-            gameState = rules.setupNewBoard();
+            gameState = setupNewBoard();
 
             game = {
                 id: gameID,
@@ -40,7 +40,7 @@ const handleMessageActions = function(action, socketEnv, next) {
                 payload: {
                     gameID,
                     playerColor: 0,
-                    gameState
+                    board: gameState.board
                 }
             });
 
@@ -85,7 +85,7 @@ const handleMessageActions = function(action, socketEnv, next) {
                 payload: {
                     gameID: gameID,
                     playerColor,
-                    gameState: game.gameState
+                    board: game.gameState.board
                 }
             });
 
@@ -120,8 +120,8 @@ const handleMessageActions = function(action, socketEnv, next) {
             gameState = game.gameState;
 
             if (
-                game.players[gameState.turn] == null ||
-                socket.id !== game.players[gameState.turn].socketID
+                game.players[gameState.board.turn] == null ||
+                socket.id !== game.players[gameState.board.turn].socketID
             ) {
                 dispatch({
                     type: actions.MOVE_REJECTED,
@@ -137,11 +137,10 @@ const handleMessageActions = function(action, socketEnv, next) {
             let legal = false;
 
             try {
-                legal = rules.isLegalMove(
+                legal = gameState.isLegalMove(
                     move.piece,
                     move.endRow,
-                    move.endCol,
-                    gameState
+                    move.endCol
                 );
             } catch (e) {
                 dispatch({
@@ -165,23 +164,22 @@ const handleMessageActions = function(action, socketEnv, next) {
                 break;
             }
 
-            let nextState = rules.getNextState(
+            let nextState = gameState.movePiece(
                 move.piece,
                 move.endRow,
-                move.endCol,
-                gameState
+                move.endCol
             );
 
             game.gameState = nextState;
 
-            if (rules.isCheckMate(nextState, nextState.turn)) {
-                game.gameState.winner = gameState.turn;
+            if (nextState.isCheckMate(nextState.board.turn)) {
+                game.gameState.winner = gameState.board.turn;
 
                 broadcast({
                     type: actions.GAME_OVER,
                     payload: {
-                        gameState: nextState,
-                        winner: gameState.turn,
+                        board: nextState.board,
+                        winner: gameState.board.turn,
                         reason: "Checkmate"
                     }
                 });
@@ -191,7 +189,7 @@ const handleMessageActions = function(action, socketEnv, next) {
                 broadcast({
                     type: actions.MOVE_APPROVED,
                     payload: {
-                        gameState: nextState
+                        board: nextState.board
                     }
                 });
 
@@ -230,12 +228,12 @@ const handleMessageActions = function(action, socketEnv, next) {
                 swap = true;
             }
 
-            game.gameState = rules.setupNewBoard();
+            game.gameState = setupNewBoard();
 
             broadcast({
                 type: actions.RESTART_GAME,
                 payload: {
-                    gameState: rules.setupNewBoard(),
+                    board: game.gameState.board,
                     swap
                 }
             });
