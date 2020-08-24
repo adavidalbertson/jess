@@ -252,10 +252,10 @@ function setupEmptyBoard() {
                     && (piece.col - p.col) * direction > 0
                 );
         
-                newBoard.pieces[rook.id].col = piece.col - direction;
-                newBoard.pieces[rook.id].hasMoved = true;
                 newBoard.positions[rook.row][rook.col] = null;
                 newBoard.positions[rook.row][piece.col - direction] = rook.id;
+                newBoard.pieces[rook.id].col = piece.col - direction;
+                newBoard.pieces[rook.id].hasMoved = true;
             }
         
             if (capturedPieceID) {
